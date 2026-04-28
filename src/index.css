@@ -1,0 +1,137 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #000000;
+    background-color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Syne', 'Inter', system-ui, sans-serif;
+    font-weight: 700;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#fff500] text-black font-bold px-6 py-3 hover:bg-[#e6dc00] transition-all duration-200 inline-flex items-center gap-2 text-sm tracking-wide uppercase;
+  }
+
+  .btn-black {
+    @apply bg-black text-white font-bold px-6 py-3 hover:bg-gray-900 transition-all duration-200 inline-flex items-center gap-2 text-sm tracking-wide uppercase;
+  }
+
+  .btn-outline {
+    @apply border-2 border-black text-black font-bold px-6 py-3 hover:bg-black hover:text-white transition-all duration-200 inline-flex items-center gap-2 text-sm tracking-wide uppercase;
+  }
+
+  .badge-promo {
+    @apply bg-[#fff500] text-black text-xs font-black px-2 py-1 uppercase tracking-wide;
+  }
+
+  .badge-new {
+    @apply bg-black text-white text-xs font-black px-2 py-1 uppercase tracking-wide;
+  }
+
+  .badge-last {
+    @apply bg-red-600 text-white text-xs font-black px-2 py-1 uppercase tracking-wide;
+  }
+
+  .badge-best {
+    @apply bg-[#dad5c7] text-black text-xs font-black px-2 py-1 uppercase tracking-wide;
+  }
+
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-black leading-tight;
+  }
+
+  .product-card {
+    @apply bg-white cursor-pointer overflow-hidden border border-gray-100 hover:border-black transition-all duration-300;
+  }
+
+  .price-current {
+    @apply text-black font-black text-xl;
+  }
+
+  .price-original {
+    @apply text-gray-400 line-through text-sm font-medium;
+  }
+
+  .price-discount {
+    @apply text-[#fff500] bg-black text-xs font-black px-2 py-0.5;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.marquee-wrapper {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
+}
+
+.product-img-zoom {
+  overflow: hidden;
+}
+
+.product-img-zoom img {
+  transition: transform 0.4s ease;
+}
+
+.product-img-zoom:hover img {
+  transform: scale(1.07);
+}
+
+.product-img-zoom:hover img {
+  transform: scale(1.05);
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: box-shadow 0.3s ease;
+}
+
+.sticky-header.scrolled {
+  box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
