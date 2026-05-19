@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 
-const ADMIN_PASSWORD = 'Mika1603';
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD;
 const STORAGE_KEY = 'em_admin_auth';
 
 export function isAdminAuthenticated(): boolean {
