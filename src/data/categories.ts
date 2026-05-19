@@ -1,0 +1,81 @@
+import { Category } from '../types';
+
+export const categories: Category[] = [
+  {
+    id: 'canapes',
+    name: 'Canapés',
+    slug: 'canapes',
+    image: 'https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Canapés design et confortables à prix d\'usine',
+    productCount: 48,
+    subcategories: [
+      { id: 'canapes-fixes', name: 'Canapés fixes', slug: 'canapes-fixes', parentSlug: 'canapes' },
+      { id: 'convertibles', name: 'Convertibles', slug: 'convertibles', parentSlug: 'canapes' },
+    ],
+  },
+  {
+    id: 'fauteuils-poufs',
+    name: 'Fauteuils & Poufs',
+    slug: 'fauteuils-poufs',
+    image: 'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Fauteuils design et poufs moelleux',
+    productCount: 32,
+  },
+  {
+    id: 'meubles',
+    name: 'Meubles',
+    slug: 'meubles',
+    image: 'https://images.pexels.com/photos/2079249/pexels-photo-2079249.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Meubles design pour tous les espaces',
+    productCount: 56,
+  },
+  {
+    id: 'tables',
+    name: 'Tables',
+    slug: 'tables',
+    image: 'https://images.pexels.com/photos/2029694/pexels-photo-2029694.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Tables basses et tables de repas haut de gamme',
+    productCount: 29,
+    subcategories: [
+      { id: 'tables-basses', name: 'Tables basses', slug: 'tables-basses', parentSlug: 'tables' },
+      { id: 'tables-repas', name: 'Tables de repas', slug: 'tables-repas', parentSlug: 'tables' },
+    ],
+  },
+  {
+    id: 'chaises-tabourets',
+    name: 'Chaises & Tabourets',
+    slug: 'chaises-tabourets',
+    image: 'https://images.pexels.com/photos/667838/pexels-photo-667838.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Chaises et tabourets design',
+    productCount: 41,
+  },
+  {
+    id: 'accessoires-decoration',
+    name: 'Accessoires & Déco',
+    slug: 'accessoires-decoration',
+    image: 'https://images.pexels.com/photos/1571459/pexels-photo-1571459.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Accessoires et décoration d\'intérieur',
+    productCount: 87,
+  },
+  {
+    id: 'literie',
+    name: 'Literie',
+    slug: 'literie',
+    image: 'https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Literie premium : matelas, sommiers et linge de lit',
+    productCount: 38,
+    subcategories: [
+      { id: 'matelas', name: 'Matelas', slug: 'matelas', parentSlug: 'literie' },
+      { id: 'sommiers', name: 'Sommiers', slug: 'sommiers', parentSlug: 'literie' },
+      { id: 'linge-de-lit', name: 'Linge de lit', slug: 'linge-de-lit', parentSlug: 'literie' },
+    ],
+  },
+  {
+    id: 'mobilier-exterieur',
+    name: 'Mobilier extérieur',
+    slug: 'mobilier-exterieur',
+    image: 'https://images.pexels.com/photos/1080721/pexels-photo-1080721.jpeg?auto=compress&cs=tinysrgb&w=600',
+    description: 'Salons de jardin et mobilier outdoor',
+    productCount: 24,
+  },
+];
