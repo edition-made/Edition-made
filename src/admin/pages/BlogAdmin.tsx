@@ -62,7 +62,7 @@ export default function BlogAdmin() {
   };
 
   const togglePublish = async (post: DbBlogPost) => {
-    const update = { published: !post.published, published_at: !post.published ? new Date().toISOString() : null };
+    const update = { published: !post.published, published_at: !post.published ? new Date().toISOString() : undefined };
     await supabase.from('blog_posts').update(update).eq('id', post.id);
     setPosts(prev => prev.map(p => p.id === post.id ? { ...p, ...update } : p));
   };

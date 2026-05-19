@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Truck, Store, CreditCard, Star, ChevronDown, ChevronUp, Shield, Check, X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { dbProductToProduct } from '../lib/productUtils';
+import { products as mockProducts } from '../data/products';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ui/ProductCard';
 import { Product } from '../types';
@@ -32,22 +33,28 @@ export default function ProductPage() {
         .select('*')
         .eq('slug', slug)
         .maybeSingle();
-      if (!data) {
-        setProduct(null);
-        setLoading(false);
-        return;
+      let p;
+      if (data) {
+        p = dbProductToProduct(data);
+      } else {
+        const mock = mockProducts.find(m => m.slug === slug);
+        if (!mock) { setProduct(null); setLoading(false); return; }
+        p = mock;
       }
-      const p = dbProductToProduct(data);
       setProduct(p);
       setSelectedColor(p.colors?.[0]);
 
       const { data: simData } = await supabase
         .from('products')
         .select('*')
-        .eq('category', data.category)
+        .eq('category', p.category)
         .neq('slug', slug)
         .limit(4);
-      setSimilarProducts((simData || []).map(dbProductToProduct));
+      if (simData && simData.length > 0) {
+        setSimilarProducts(simData.map(dbProductToProduct));
+      } else {
+        setSimilarProducts(mockProducts.filter(m => m.category === p.category && m.slug !== slug).slice(0, 4));
+      }
       setLoading(false);
     };
     fetchProduct();

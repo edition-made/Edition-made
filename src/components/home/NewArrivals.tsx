@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { dbProductToProduct } from '../../lib/productUtils';
+import { products as mockProducts } from '../../data/products';
 import ProductCard from '../ui/ProductCard';
 import { Product } from '../../types';
 
@@ -16,7 +17,13 @@ export default function NewArrivals() {
       .eq('is_weekly_arrival', true)
       .eq('in_stock', true)
       .limit(8)
-      .then(({ data }) => setProducts((data || []).map(dbProductToProduct)));
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setProducts(data.map(dbProductToProduct));
+        } else {
+          setProducts(mockProducts.filter(p => p.isWeeklyArrival && p.inStock).slice(0, 8));
+        }
+      });
   }, []);
 
   if (products.length === 0) return null;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Sparkles, Calendar } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { dbProductToProduct } from '../lib/productUtils';
+import { products as mockProducts } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
 import { Product } from '../types';
 
@@ -16,8 +17,16 @@ export default function ArrivagePage() {
         supabase.from('products').select('*').eq('is_weekly_arrival', true).eq('in_stock', true),
         supabase.from('products').select('*').eq('is_weekly_arrival', false).eq('in_stock', true).limit(8),
       ]);
-      setArrivals((arrivalRes.data || []).map(dbProductToProduct));
-      setOthers((othersRes.data || []).map(dbProductToProduct));
+      setArrivals(
+        arrivalRes.data && arrivalRes.data.length > 0
+          ? arrivalRes.data.map(dbProductToProduct)
+          : mockProducts.filter(p => p.isWeeklyArrival && p.inStock)
+      );
+      setOthers(
+        othersRes.data && othersRes.data.length > 0
+          ? othersRes.data.map(dbProductToProduct)
+          : mockProducts.filter(p => !p.isWeeklyArrival && p.inStock).slice(0, 8)
+      );
       setLoading(false);
     };
     fetchData();

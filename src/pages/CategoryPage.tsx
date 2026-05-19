@@ -4,6 +4,7 @@ import { SlidersHorizontal, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { categories } from '../data/categories';
 import { supabase } from '../lib/supabase';
 import { dbProductToProduct } from '../lib/productUtils';
+import { products as mockProducts } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
 import { Product } from '../types';
 
@@ -35,7 +36,11 @@ export default function CategoryPage() {
       .eq('category', slug)
       .eq('in_stock', true)
       .then(({ data }) => {
-        setAllProducts((data || []).map(dbProductToProduct));
+        if (data && data.length > 0) {
+          setAllProducts(data.map(dbProductToProduct));
+        } else {
+          setAllProducts(mockProducts.filter(p => p.category === slug && p.inStock));
+        }
         setLoading(false);
       });
   }, [slug]);

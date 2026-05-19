@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Flame, Tag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { dbProductToProduct } from '../lib/productUtils';
+import { products as mockProducts } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
 import { Product } from '../types';
 
@@ -17,7 +18,11 @@ export default function PromotionsPage() {
       .gte('discount', 1)
       .order('discount', { ascending: false })
       .then(({ data }) => {
-        setPromoProducts((data || []).map(dbProductToProduct));
+        if (data && data.length > 0) {
+          setPromoProducts(data.map(dbProductToProduct));
+        } else {
+          setPromoProducts(mockProducts.filter(p => p.discount && p.discount >= 1));
+        }
         setLoading(false);
       });
   }, []);

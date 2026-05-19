@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Clock, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { supabase, DbBlogPost } from '../lib/supabase';
+import { blogPosts as mockPosts } from '../data/blog';
+import { BlogPost } from '../types';
+
+function toDb(p: BlogPost): DbBlogPost {
+  return {
+    id: p.id, title: p.title, slug: p.slug, excerpt: p.excerpt,
+    content: p.content || '', cover_image: p.image, category: p.category,
+    author: p.author, published: true, published_at: p.date,
+    read_time: p.readTime, tags: p.tags,
+    seo_title: '', seo_description: '', seo_keywords: '',
+    og_image: '', canonical_url: '', created_at: p.date, updated_at: p.date,
+  };
+}
 
 const CAT_COLORS: Record<string, string> = {
   Conseils: 'bg-amber-100 text-amber-800',
@@ -29,22 +42,17 @@ export default function BlogPostPage() {
         .eq('published', true)
         .maybeSingle();
 
-      if (!data) {
-        setNotFound(true);
-        setLoading(false);
-        return;
+      if (data) {
+        setPost(data);
+        const { data: otherData } = await supabase
+          .from('blog_posts').select('*').eq('published', true).neq('slug', slug).limit(3);
+        setOthers(otherData && otherData.length > 0 ? otherData : mockPosts.filter(p => p.slug !== slug).slice(0, 3).map(toDb));
+      } else {
+        const mock = mockPosts.find(p => p.slug === slug);
+        if (!mock) { setNotFound(true); setLoading(false); return; }
+        setPost(toDb(mock));
+        setOthers(mockPosts.filter(p => p.slug !== slug).slice(0, 3).map(toDb));
       }
-
-      setPost(data);
-
-      const { data: otherData } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('published', true)
-        .neq('slug', slug)
-        .limit(3);
-
-      setOthers(otherData || []);
       setLoading(false);
     };
     fetchPost();

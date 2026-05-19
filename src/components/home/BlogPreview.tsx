@@ -1,8 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { supabase, DbBlogPost } from '../../lib/supabase';
+import { blogPosts as mockPosts } from '../../data/blog';
+import { BlogPost } from '../../types';
 import SectionHeader from '../ui/SectionHeader';
+
+function toDbPost(p: BlogPost): DbBlogPost {
+  return {
+    id: p.id, title: p.title, slug: p.slug, excerpt: p.excerpt,
+    content: p.content || '', cover_image: p.image, category: p.category,
+    author: p.author, published: true, published_at: p.date,
+    read_time: p.readTime, tags: p.tags,
+    seo_title: '', seo_description: '', seo_keywords: '',
+    og_image: '', canonical_url: '', created_at: p.date, updated_at: p.date,
+  };
+}
 
 const CAT_COLORS: Record<string, string> = {
   Conseils: 'bg-amber-100 text-amber-800',
@@ -22,7 +35,10 @@ export default function BlogPreview() {
       .eq('published', true)
       .order('published_at', { ascending: false })
       .limit(3)
-      .then(({ data }) => setPosts(data || []));
+      .then(({ data }) => {
+        if (data && data.length > 0) setPosts(data as DbBlogPost[]);
+        else setPosts(mockPosts.slice(0, 3).map(toDbPost));
+      });
   }, []);
 
   if (posts.length === 0) return null;

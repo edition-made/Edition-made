@@ -2,6 +2,19 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, ArrowRight } from 'lucide-react';
 import { supabase, DbBlogPost } from '../lib/supabase';
+import { blogPosts as mockPosts } from '../data/blog';
+import { BlogPost } from '../types';
+
+function toDb(p: BlogPost): DbBlogPost {
+  return {
+    id: p.id, title: p.title, slug: p.slug, excerpt: p.excerpt,
+    content: p.content || '', cover_image: p.image, category: p.category,
+    author: p.author, published: true, published_at: p.date,
+    read_time: p.readTime, tags: p.tags,
+    seo_title: '', seo_description: '', seo_keywords: '',
+    og_image: '', canonical_url: '', created_at: p.date, updated_at: p.date,
+  };
+}
 
 type CatFilter = { id: string; label: string };
 
@@ -37,7 +50,14 @@ export default function BlogPage() {
         .order('published_at', { ascending: false });
       if (activeCategory) q = q.eq('category', activeCategory);
       const { data } = await q;
-      setPosts(data || []);
+      if (data && data.length > 0) {
+        setPosts(data);
+      } else {
+        const filtered = activeCategory
+          ? mockPosts.filter(p => p.category === activeCategory)
+          : mockPosts;
+        setPosts(filtered.map(toDb));
+      }
       setLoading(false);
     };
     fetchPosts();
