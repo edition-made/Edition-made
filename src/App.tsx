@@ -16,6 +16,7 @@ import PromotionsPage from './pages/PromotionsPage';
 import ArrivagePage from './pages/ArrivagePage';
 import FAQPage from './pages/FAQPage';
 import AdminApp from './admin/AdminApp';
+import WhatsAppButton from './components/ui/WhatsAppButton';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +25,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 }
