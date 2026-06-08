@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageSquare, Mail, Phone, Check, Archive, Eye } from 'lucide-react';
+import { MessageSquare, Mail, Phone, Check, Archive, Eye, Trash2 } from 'lucide-react';
 import { supabase, DbContactSubmission } from '../../lib/supabase';
 
 const statusConfig: Record<string, { label: string; color: string }> = {
@@ -14,6 +14,7 @@ export default function ContactsAdmin() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<DbContactSubmission | null>(null);
   const [filterStatus, setFilterStatus] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const fetchContacts = async () => {
     setLoading(true);
@@ -35,6 +36,12 @@ export default function ContactsAdmin() {
   const openContact = async (contact: DbContactSubmission) => {
     setSelected(contact);
     if (contact.status === 'new') await updateStatus(contact.id, 'read');
+  };
+
+  const deleteContact = async (id: string) => {
+    await supabase.from('contact_submissions').delete().eq('id', id);
+    setContacts(prev => prev.filter(c => c.id !== id));
+    if (selected?.id === id) setSelected(null);
   };
 
   const newCount = contacts.filter(c => c.status === 'new').length;
@@ -138,6 +145,24 @@ export default function ContactsAdmin() {
                     className="flex items-center gap-1.5 bg-white/10 text-gray-400 px-3 py-2 text-xs font-bold hover:bg-white/20 transition-colors">
                     <Archive size={12} /> Archiver
                   </button>
+                  {confirmDeleteId === selected.id ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-red-400">Confirmer ?</span>
+                      <button onClick={() => { deleteContact(selected.id); setConfirmDeleteId(null); }}
+                        className="bg-red-500 text-white px-2 py-2 text-xs font-bold hover:bg-red-600 transition-colors">
+                        Oui
+                      </button>
+                      <button onClick={() => setConfirmDeleteId(null)}
+                        className="bg-white/10 text-gray-400 px-2 py-2 text-xs font-bold hover:bg-white/20 transition-colors">
+                        Non
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setConfirmDeleteId(selected.id)}
+                      className="flex items-center gap-1.5 bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-2 text-xs font-bold hover:bg-red-500/20 transition-colors ml-auto">
+                      <Trash2 size={12} /> Supprimer
+                    </button>
+                  )}
                 </div>
               </>
             ) : (

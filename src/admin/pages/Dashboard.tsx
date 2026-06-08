@@ -59,7 +59,7 @@ export default function Dashboard() {
     { label: 'Produits', value: stats.totalProducts, icon: <Package size={20} />, color: 'bg-white/5', badge: stats.lowStock > 0 ? `${stats.lowStock} stock bas` : null, href: '/admin/produits' },
     { label: 'Clients', value: stats.totalCustomers, icon: <Users size={20} />, color: 'bg-white/5', href: '/admin/crm' },
     { label: 'Nouveaux contacts', value: stats.newContacts, icon: <MessageSquare size={20} />, color: 'bg-white/5', badge: stats.newContacts > 0 ? 'Non lus' : null, href: '/admin/contacts' },
-    { label: 'Articles publiés', value: stats.publishedPosts, icon: <TrendingUp size={20} />, color: 'bg-white/5', href: '/admin/blog' },
+    { label: 'Blog publiés', value: stats.publishedPosts, icon: <TrendingUp size={20} />, color: 'bg-white/5', href: '/admin/blog' },
     { label: 'Stock critique', value: stats.lowStock, icon: <Warehouse size={20} />, color: stats.lowStock > 0 ? 'bg-red-900/30' : 'bg-white/5', href: '/admin/stock' },
   ];
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, ShoppingCart, ChevronDown, ChevronUp, Package, Truck, Store } from 'lucide-react';
+import { Users, ShoppingCart, ChevronDown, ChevronUp, Truck, Store, Trash2 } from 'lucide-react';
 import { supabase, DbOrder, DbCustomer, DbOrderItem } from '../../lib/supabase';
 
 type Tab = 'orders' | 'customers';
@@ -24,6 +24,7 @@ export default function CRMAdmin() {
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [orderItems, setOrderItems] = useState<Record<string, DbOrderItem[]>>({});
   const [filterStatus, setFilterStatus] = useState('');
+  const [confirmDeleteOrderId, setConfirmDeleteOrderId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     let q = supabase.from('orders').select('*').order('created_at', { ascending: false });
@@ -58,6 +59,14 @@ export default function CRMAdmin() {
   const updateOrderStatus = async (orderId: string, status: string) => {
     await supabase.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', orderId);
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: status as any } : o));
+  };
+
+  const deleteOrder = async (orderId: string) => {
+    await supabase.from('order_items').delete().eq('order_id', orderId);
+    await supabase.from('orders').delete().eq('id', orderId);
+    setOrders(prev => prev.filter(o => o.id !== orderId));
+    setExpandedOrder(null);
+    setConfirmDeleteOrderId(null);
   };
 
   return (
@@ -138,6 +147,27 @@ export default function CRMAdmin() {
 
                   {expandedOrder === order.id && (
                     <div className="border-t border-white/10 p-4 bg-white/3">
+                      <div className="flex justify-end mb-3">
+                        {confirmDeleteOrderId === order.id ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-red-400">Supprimer cette commande ?</span>
+                            <button onClick={() => deleteOrder(order.id)}
+                              className="bg-red-500 text-white px-3 py-1.5 text-xs font-bold hover:bg-red-600 transition-colors">
+                              Confirmer
+                            </button>
+                            <button onClick={() => setConfirmDeleteOrderId(null)}
+                              className="bg-white/10 text-gray-400 px-3 py-1.5 text-xs font-bold hover:bg-white/20 transition-colors">
+                              Annuler
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={e => { e.stopPropagation(); setConfirmDeleteOrderId(order.id); }}
+                            className="flex items-center gap-1.5 bg-red-500/10 text-red-400 border border-red-500/30 px-3 py-1.5 text-xs font-bold hover:bg-red-500/20 transition-colors">
+                            <Trash2 size={12} /> Supprimer la commande
+                          </button>
+                        )}
+                      </div>
                       <div className="grid md:grid-cols-2 gap-6 mb-4">
                         <div>
                           <p className="text-xs font-bold text-gray-400 uppercase mb-2">Informations client</p>
