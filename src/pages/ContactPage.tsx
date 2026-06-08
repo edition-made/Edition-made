@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, MessageCircle, Send, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { sendContactConfirmation, sendContactNotificationToAdmin } from '../lib/emailService';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -21,11 +20,11 @@ export default function ContactPage() {
       message: form.message,
       status: 'new',
     });
-    const emailData = { name: form.name, email: form.email, phone: form.phone, subject: form.subject, message: form.message };
-    await Promise.allSettled([
-      sendContactConfirmation(emailData),
-      sendContactNotificationToAdmin(emailData),
-    ]);
+    await fetch('/api/send-contact-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, subject: form.subject, message: form.message }),
+    });
     setSent(true);
   };
 

@@ -22,6 +22,11 @@
   to = "/.netlify/functions/stripe-webhook"
   status = 200
 
+[[redirects]]
+  from = "/api/send-contact-email"
+  to = "/.netlify/functions/send-contact-email"
+  status = 200
+
 # SPA catch-all — doit rester en dernier
 [[redirects]]
   from = "/*"
