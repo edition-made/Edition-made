@@ -85,13 +85,13 @@ export default function ShowroomPage() {
             <MapPin size={24} className="text-[#fff500] mb-3" />
             <h3 className="font-display font-bold text-lg mb-3">Adresse</h3>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Zone Commerciale<br />
+              14 avenue des Canadiens<br />
               94410 Saint-Maurice<br />
               Val-de-Marne (94)<br />
               Île-de-France
             </p>
             <a
-              href="https://maps.google.com"
+              href="https://maps.google.com/maps?q=14+avenue+des+Canadiens,+94410+Saint-Maurice,+France"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-[#fff500] text-xs font-bold mt-3 hover:text-white transition-colors"
@@ -127,11 +127,11 @@ export default function ShowroomPage() {
             <div className="space-y-3 text-sm">
               <div>
                 <p className="text-gray-400 text-xs uppercase mb-1">Téléphone</p>
-                <a href="tel:+33XXXXXXXXX" className="text-white hover:text-[#fff500] transition-colors">01 XX XX XX XX</a>
+                <a href="tel:+33660222525" className="text-white hover:text-[#fff500] transition-colors">06 60 22 25 25</a>
               </div>
               <div>
                 <p className="text-gray-400 text-xs uppercase mb-1">WhatsApp</p>
-                <a href="https://wa.me/33XXXXXXXXX" className="text-white hover:text-[#fff500] transition-colors">Nous écrire sur WhatsApp</a>
+                <a href="https://wa.me/33660222525" className="text-white hover:text-[#fff500] transition-colors">Nous écrire sur WhatsApp</a>
               </div>
               <div>
                 <p className="text-gray-400 text-xs uppercase mb-1">Email</p>
@@ -143,12 +143,17 @@ export default function ShowroomPage() {
 
         <div className="bg-gray-100 p-4 mb-16">
           <h3 className="font-bold text-lg mb-4 px-2">Comment nous trouver</h3>
-          <div className="aspect-video bg-gray-300 flex items-center justify-center">
-            <div className="text-center">
-              <MapPin size={48} className="text-gray-400 mx-auto mb-2" />
-              <p className="text-gray-500 text-sm">Carte Google Maps</p>
-              <p className="text-xs text-gray-400">Saint-Maurice, Val-de-Marne (94)</p>
-            </div>
+          <div className="overflow-hidden">
+            <iframe
+              title="Edition Made — 14 avenue des Canadiens, Saint-Maurice"
+              src="https://maps.google.com/maps?q=14+avenue+des+Canadiens,+94410+Saint-Maurice,+France&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="400"
+              style={{ border: 0, display: 'block' }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
           </div>
         </div>
 

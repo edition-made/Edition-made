@@ -51,7 +51,7 @@ export default function ShowroomSection() {
                 <Phone size={16} className="text-[#fff500] bg-black p-0.5 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-xs uppercase mb-1">Contact</p>
-                  <p className="text-xs text-gray-600">01 XX XX XX XX</p>
+                  <p className="text-xs text-gray-600">06 60 22 25 25</p>
                 </div>
               </div>
             </div>

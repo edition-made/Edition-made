@@ -79,15 +79,15 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin size={16} className="text-[#fff500] mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-gray-400">
-                  Zone Commerciale<br />
+                  14 avenue des Canadiens<br />
                   94410 Saint-Maurice<br />
                   Val-de-Marne (94)
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={16} className="text-[#fff500] flex-shrink-0" />
-                <a href="tel:+33XXXXXXXXX" className="text-sm text-gray-400 hover:text-white transition-colors">
-                  01 XX XX XX XX
+                <a href="tel:+33660222525" className="text-sm text-gray-400 hover:text-white transition-colors">
+                  06 60 22 25 25
                 </a>
               </li>
               <li className="flex items-center gap-3">

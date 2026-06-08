@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Search, ShoppingCart, Menu, X, ChevronDown, Phone, MapPin,
+  Search, ShoppingCart, Menu, X, ChevronDown, Phone, MapPin, MessageSquare,
   Home, Tag, Sparkles, Sofa, Armchair, Star, Moon, Leaf, BookOpen, Store,
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -184,8 +184,17 @@ export default function Header() {
                 <Search size={20} />
               </button>
 
+              <Link
+                to="/contact"
+                className="hidden md:flex items-center gap-1 text-xs font-semibold text-gray-700 hover:bg-[#fff500] p-2 transition-colors"
+                aria-label="Contact"
+              >
+                <MessageSquare size={16} />
+                <span className="hidden lg:block">Contact</span>
+              </Link>
+
               <a
-                href="https://wa.me/33XXXXXXXXX"
+                href="https://wa.me/33660222525"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hidden md:flex items-center gap-1 text-xs font-semibold text-gray-700 hover:bg-[#fff500] p-2 transition-colors"
@@ -268,7 +277,7 @@ export default function Header() {
                 </div>
               ))}
               <div className="px-4 py-4 flex flex-col gap-2">
-                <a href="tel:+33XXXXXXXXX" className="flex items-center gap-2 text-sm font-semibold hover:text-gray-600 transition-colors">
+                <a href="tel:+33660222525" className="flex items-center gap-2 text-sm font-semibold hover:text-gray-600 transition-colors">
                   <Phone size={16} /> Appeler le showroom
                 </a>
                 <Link to="/contact" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 text-sm font-semibold hover:text-gray-600 transition-colors">

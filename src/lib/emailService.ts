@@ -54,7 +54,7 @@ function wrapHtml(content: string): string {
         <p style="margin:0 0 8px;color:#ffffff;font-size:13px;font-weight:bold;letter-spacing:1px;">
           EDITION MADE
         </p>
-        <p style="margin:0 0 4px;color:#888;font-size:11px;">Zone Commerciale · 94410 Saint-Maurice (Val-de-Marne)</p>
+        <p style="margin:0 0 4px;color:#888;font-size:11px;">14 avenue des Canadiens · 94410 Saint-Maurice (Val-de-Marne)</p>
         <p style="margin:0 0 4px;color:#888;font-size:11px;">Lun–Sam : 10h–19h · Dim : 10h–17h</p>
         <p style="margin:0;color:#888;font-size:11px;">
           <a href="mailto:contact@editionmade.fr" style="color:#fff500;text-decoration:none;">contact@editionmade.fr</a>
@@ -91,7 +91,7 @@ export type OrderEmailData = {
 export async function sendOrderConfirmation(data: OrderEmailData): Promise<void> {
   const orderRef = data.orderNumber || `EM-${Date.now().toString(36).toUpperCase()}`;
   const deliveryLabel = data.deliveryMode === 'pickup'
-    ? 'Retrait en magasin – Zone Commerciale, 94410 Saint-Maurice'
+    ? 'Retrait en magasin – 14 avenue des Canadiens, 94410 Saint-Maurice'
     : `Livraison à domicile – ${data.address || ''}, ${data.zip || ''} ${data.city || ''}`;
 
   const itemsRows = data.items.map(item => `

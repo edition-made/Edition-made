@@ -112,7 +112,7 @@ export default function BlogPostPage() {
               <img src={post.cover_image} alt={post.title} className="w-full h-full object-cover" />
             </div>
             <div
-              className="prose prose-sm max-w-none text-gray-700 leading-relaxed [&>h2]:font-display [&>h2]:font-bold [&>h2]:text-xl [&>h2]:text-black [&>h2]:mt-8 [&>h2]:mb-3 [&>p]:mb-4 [&>ul]:space-y-2 [&>ul]:pl-4 [&>ul]:list-disc"
+              className="prose prose-sm max-w-none text-gray-700 leading-relaxed [&>h2]:font-display [&>h2]:font-bold [&>h2]:text-xl [&>h2]:text-black [&>h2]:mt-10 [&>h2]:mb-3 [&>h3]:font-bold [&>h3]:text-base [&>h3]:text-black [&>h3]:mt-6 [&>h3]:mb-2 [&>p]:mb-4 [&>ul]:space-y-2 [&>ul]:pl-4 [&>ul]:list-disc [&>img]:w-full [&>img]:object-cover [&>img]:my-4 [&_a]:text-black [&_a]:font-semibold [&_a]:underline [&_a:hover]:text-[#d4bc00] [&_strong]:text-black"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
             {post.tags && post.tags.length > 0 && (
@@ -160,6 +160,46 @@ export default function BlogPostPage() {
           </aside>
         </div>
       </div>
+
+      {/* ── Articles recommandés en bas de page ── */}
+      {others.length > 0 && (
+        <div className="border-t border-gray-100 bg-gray-50 py-12">
+          <div className="max-w-screen-xl mx-auto px-4">
+            <h2 className="font-display font-bold text-2xl text-black mb-8 text-center">
+              Ces articles pourraient vous intéresser
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {others.slice(0, 3).map(other => (
+                <Link
+                  key={other.id}
+                  to={`/blog/${other.slug}`}
+                  className="group bg-white overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <div className="aspect-video overflow-hidden">
+                    <img
+                      src={other.cover_image}
+                      alt={other.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <span className={`inline-block text-[9px] font-black px-2 py-0.5 uppercase mb-2 ${CAT_COLORS[other.category] || 'bg-[#fff500] text-black'}`}>
+                      {other.category}
+                    </span>
+                    <h3 className="font-bold text-sm text-black leading-snug group-hover:underline mb-2 line-clamp-2">
+                      {other.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 line-clamp-2 mb-3">{other.excerpt}</p>
+                    <div className="flex items-center gap-1 text-xs font-bold text-black group-hover:gap-2 transition-all">
+                      Lire l'article <ArrowRight size={12} />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

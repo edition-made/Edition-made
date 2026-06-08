@@ -49,7 +49,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-bold text-sm mb-1">Adresse showroom</p>
-                  <p className="text-sm text-gray-600">Zone Commerciale<br />94410 Saint-Maurice<br />Val-de-Marne (94)</p>
+                  <p className="text-sm text-gray-600">14 avenue des Canadiens<br />94410 Saint-Maurice<br />Val-de-Marne (94)</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -58,7 +58,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-bold text-sm mb-1">Téléphone</p>
-                  <a href="tel:+33XXXXXXXXX" className="text-sm text-gray-600 hover:text-black transition-colors">01 XX XX XX XX</a>
+                  <a href="tel:+33660222525" className="text-sm text-gray-600 hover:text-black transition-colors">06 60 22 25 25</a>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -67,7 +67,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-bold text-sm mb-1">WhatsApp</p>
-                  <a href="https://wa.me/33XXXXXXXXX" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-black transition-colors">
+                  <a href="https://wa.me/33660222525" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-600 hover:text-black transition-colors">
                     Nous écrire sur WhatsApp
                   </a>
                 </div>

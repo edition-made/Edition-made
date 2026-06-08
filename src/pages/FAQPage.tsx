@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: 'Comment contacter le service client ?',
-    a: 'Vous pouvez nous contacter par téléphone au 01 XX XX XX XX (du lundi au samedi de 10h à 19h), par WhatsApp, par email à contact@editionmade.fr, ou directement en vous rendant dans notre showroom.',
+    a: 'Vous pouvez nous contacter par téléphone au 06 60 22 25 25 (du lundi au samedi de 10h à 19h), par WhatsApp, par email à contact@editionmade.fr, ou directement en vous rendant dans notre showroom.',
   },
 ];
 
@@ -80,8 +80,8 @@ export default function FAQPage() {
           <h2 className="font-display font-bold text-xl mb-2">Vous ne trouvez pas votre réponse ?</h2>
           <p className="text-gray-400 text-sm mb-5">Notre équipe est disponible pour répondre à toutes vos questions</p>
           <div className="flex flex-wrap justify-center gap-3">
-            <a href="tel:+33XXXXXXXXX" className="btn-primary">Appeler le showroom</a>
-            <a href="https://wa.me/33XXXXXXXXX" className="btn-outline border-white text-white hover:bg-white hover:text-black">WhatsApp</a>
+            <a href="tel:+33660222525" className="btn-primary">Appeler le showroom</a>
+            <a href="https://wa.me/33660222525" className="btn-outline border-white text-white hover:bg-white hover:text-black">WhatsApp</a>
           </div>
         </div>
       </div>
