@@ -2,6 +2,21 @@
   command = "npm run build"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+
+# Redirige /api/* vers les Netlify Functions (avant la règle catch-all SPA)
+[[redirects]]
+  from = "/api/create-payment-intent"
+  to = "/.netlify/functions/create-payment-intent"
+  status = 200
+
+[[redirects]]
+  from = "/api/stripe-webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+# SPA catch-all — doit rester en dernier
 [[redirects]]
   from = "/*"
   to = "/index.html"

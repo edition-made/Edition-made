@@ -16,6 +16,7 @@ import PromotionsPage from './pages/PromotionsPage';
 import ArrivagePage from './pages/ArrivagePage';
 import FAQPage from './pages/FAQPage';
 import AdminApp from './admin/AdminApp';
+import OrderSuccessPage from './pages/OrderSuccessPage';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/produit/:slug" element={<Layout><ProductPage /></Layout>} />
           <Route path="/panier" element={<Layout><CartPage /></Layout>} />
           <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/commande-confirmee" element={<Layout><OrderSuccessPage /></Layout>} />
           <Route path="/magasin" element={<Layout><ShowroomPage /></Layout>} />
           <Route path="/blog" element={<Layout><BlogPage /></Layout>} />
           <Route path="/blog/:slug" element={<Layout><BlogPostPage /></Layout>} />
