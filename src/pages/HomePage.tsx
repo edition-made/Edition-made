@@ -8,6 +8,7 @@ import ShowroomSection from '../components/home/ShowroomSection';
 import WhyUs from '../components/home/WhyUs';
 import BlogPreview from '../components/home/BlogPreview';
 import HomeFAQ from '../components/home/HomeFAQ';
+import StoreMapSection from '../components/home/StoreMapSection';
 
 export default function HomePage() {
   return (
@@ -22,6 +23,7 @@ export default function HomePage() {
       <ReviewsSection />
       <BlogPreview />
       <HomeFAQ />
+      <StoreMapSection />
     </>
   );
 }
