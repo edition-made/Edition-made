@@ -55,9 +55,9 @@
       "priceRange": "€€"
     }
     </script>
-    <!-- Stripe.js préchargé pour éliminer la latence au checkout -->
+    <!-- Stripe.js préconnexion DNS uniquement — @stripe/stripe-js gère la version -->
     <link rel="preconnect" href="https://js.stripe.com" />
-    <script src="https://js.stripe.com/v3/" async></script>
+    <link rel="dns-prefetch" href="https://js.stripe.com" />
   </head>
   <body>
     <div id="root"></div>
