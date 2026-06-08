@@ -7,8 +7,12 @@ export default function Footer() {
       <div className="max-w-screen-xl mx-auto px-4 pt-14 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
           <div>
-            <div className="font-display font-bold text-2xl mb-4">
-              EDITION<span className="text-[#fff500] bg-white/10 px-1 ml-0.5">MADE</span>
+            <div className="mb-4">
+              <img
+                src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
+                alt="Edition Made"
+                className="h-14 w-auto object-contain brightness-0 invert"
+              />
             </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-5">
               Mobilier haut de gamme à prix d'usine. 500m² de showroom à Saint-Maurice (94). Déstockage et arrivages toute l'année.

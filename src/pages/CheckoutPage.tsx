@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, Lock, Truck, Store, CreditCard, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { sendOrderConfirmation, sendOrderNotificationToAdmin } from '../lib/emailService';
 
 const steps = ['Livraison', 'Paiement', 'Confirmation'];
 
@@ -19,7 +20,28 @@ export default function CheckoutPage() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
+    const orderData = {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone,
+      deliveryMode,
+      address: form.address,
+      city: form.city,
+      zip: form.zip,
+      items: items.map(i => ({
+        name: i.product.name,
+        quantity: i.quantity,
+        price: i.product.price,
+        image: i.product.images[0],
+      })),
+      total: totalPrice,
+    };
+    await Promise.allSettled([
+      sendOrderConfirmation(orderData),
+      sendOrderNotificationToAdmin(orderData),
+    ]);
     setOrderPlaced(true);
     clearCart();
   };
@@ -45,8 +67,12 @@ export default function CheckoutPage() {
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-screen-xl mx-auto px-4 py-8">
         <div className="flex items-center gap-2 mb-8">
-          <Link to="/" className="font-display font-bold text-xl">
-            EDITION<span className="text-[#fff500] bg-black px-1 ml-0.5">MADE</span>
+          <Link to="/">
+            <img
+              src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
+              alt="Edition Made"
+              className="h-10 w-auto object-contain"
+            />
           </Link>
           <span className="text-gray-300 mx-2">|</span>
           <span className="text-sm text-gray-600 font-medium">Commande sécurisée</span>

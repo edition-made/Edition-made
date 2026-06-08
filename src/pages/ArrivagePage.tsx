@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Sparkles, Calendar } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { dbProductToProduct } from '../lib/productUtils';
-import { products as mockProducts } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
 import { Product } from '../types';
 
@@ -13,20 +12,24 @@ export default function ArrivagePage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [arrivalRes, othersRes] = await Promise.all([
-        supabase.from('products').select('*').eq('is_weekly_arrival', true).eq('in_stock', true),
-        supabase.from('products').select('*').eq('is_weekly_arrival', false).eq('in_stock', true).limit(8),
+      const fetchWithFallback = async (eq_field: string, eq_val: boolean, lim?: number) => {
+        let q = supabase.from('products').select('*').eq(eq_field, eq_val).eq('in_stock', true);
+        if (lim) q = q.limit(lim);
+        let { data, error } = await q.order('sort_order', { ascending: true, nullsFirst: false });
+        if (error) {
+          const qf = supabase.from('products').select('*').eq(eq_field, eq_val).eq('in_stock', true);
+          ({ data } = await (lim ? qf.limit(lim) : qf).order('created_at', { ascending: false }));
+        }
+        return data || [];
+      };
+
+      const [arrivalData, othersData] = await Promise.all([
+        fetchWithFallback('is_weekly_arrival', true),
+        fetchWithFallback('is_weekly_arrival', false, 8),
       ]);
-      setArrivals(
-        arrivalRes.data && arrivalRes.data.length > 0
-          ? arrivalRes.data.map(dbProductToProduct)
-          : mockProducts.filter(p => p.isWeeklyArrival && p.inStock)
-      );
-      setOthers(
-        othersRes.data && othersRes.data.length > 0
-          ? othersRes.data.map(dbProductToProduct)
-          : mockProducts.filter(p => !p.isWeeklyArrival && p.inStock).slice(0, 8)
-      );
+
+      setArrivals(arrivalData.map(dbProductToProduct));
+      setOthers(othersData.map(dbProductToProduct));
       setLoading(false);
     };
     fetchData();

@@ -118,8 +118,12 @@ export default function Header() {
       <header className={`sticky-header bg-white border-b border-gray-200 z-50 ${isScrolled ? 'scrolled' : ''}`}>
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="flex items-center justify-between h-20 gap-4">
-            <Link to="/" className="flex-shrink-0 font-display font-bold text-xl tracking-tight">
-              EDITION<span className="text-[#fff500] bg-black px-1 ml-0.5">MADE</span>
+            <Link to="/" className="flex-shrink-0">
+              <img
+                src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
+                alt="Edition Made"
+                className="h-12 w-auto object-contain"
+              />
             </Link>
 
             <nav className="hidden xl:flex items-stretch h-full overflow-x-auto scrollbar-hide">

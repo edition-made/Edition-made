@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
-import { supabase, DbProduct } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import ImageUpload from '../components/ImageUpload';
 import { toSeoSlug } from '../../lib/imageUtils';
 
@@ -29,6 +29,28 @@ const emptyForm = {
   is_new: false, is_featured: false, is_weekly_arrival: false,
   rating: '', review_count: '0', brand: 'Edition Made', tags: '',
 };
+
+const SELECT_CLS = "w-full bg-[#1c1c1c] border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] focus:ring-1 focus:ring-[#fff500] transition-colors cursor-pointer [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>option:checked]:bg-[#fff500] [&>option:checked]:text-black [&>option:hover]:bg-[#fff500] [&>option:hover]:text-black";
+
+type FormState = typeof emptyForm;
+type InputProps = {
+  label: string; name: string; type?: string; required?: boolean; placeholder?: string;
+  form: FormState; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  hint?: string;
+};
+const Input = ({ label, name, type = 'text', required = false, placeholder = '', form, onChange, hint }: InputProps) => (
+  <div>
+    <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">
+      {label}{required && <span className="text-[#fff500] ml-0.5">*</span>}
+    </label>
+    <input
+      type={type} name={name} value={(form as any)[name]} onChange={onChange}
+      required={required} placeholder={placeholder}
+      className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] placeholder-gray-600"
+    />
+    {hint && <p className="text-[10px] text-[#fff500]/70 mt-1">{hint}</p>}
+  </div>
+);
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
@@ -77,11 +99,32 @@ export default function ProductForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
-    setForm(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-      ...(name === 'name' && isNew ? { slug: toSeoSlug(value) } : {}),
-    }));
+
+    setForm(prev => {
+      const next: typeof prev = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value,
+        ...(name === 'name' && isNew ? { slug: toSeoSlug(value) } : {}),
+      };
+
+      // Le prix actuel est la base fixe — les autres champs se calculent depuis lui
+      const currentPrice = parseFloat(name === 'price' ? value : prev.price);
+      if (name === 'discount') {
+        // Admin saisit une remise → calcule le prix original
+        const disc = parseFloat(value);
+        if (!isNaN(disc) && !isNaN(currentPrice) && currentPrice > 0 && disc > 0 && disc < 100) {
+          next.original_price = String(Math.round(currentPrice / (1 - disc / 100)));
+        }
+      } else if (name === 'original_price') {
+        // Admin saisit un prix original → calcule la remise
+        const orig = parseFloat(value);
+        if (!isNaN(orig) && !isNaN(currentPrice) && currentPrice > 0 && orig > currentPrice) {
+          next.discount = String(Math.round((1 - currentPrice / orig) * 100));
+        }
+      }
+
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,23 +182,6 @@ export default function ProductForm() {
     </div>
   );
 
-  const Input = ({ label, name, type = 'text', required = false, placeholder = '' }: any) => (
-    <div>
-      <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">
-        {label}{required && <span className="text-[#fff500] ml-0.5">*</span>}
-      </label>
-      <input
-        type={type}
-        name={name}
-        value={(form as any)[name]}
-        onChange={handleChange}
-        required={required}
-        placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] placeholder-gray-600"
-      />
-    </div>
-  );
-
   return (
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
@@ -175,8 +201,8 @@ export default function ProductForm() {
           <div className="bg-black/40 border border-white/10 p-5">
             <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wide mb-4">Informations principales</h2>
             <div className="space-y-4">
-              <Input label="Nom du produit" name="name" required />
-              <Input label="Slug SEO (auto-généré)" name="slug" required placeholder="nom-du-produit" />
+              <Input form={form} onChange={handleChange} label="Nom du produit" name="name" required />
+              <Input form={form} onChange={handleChange} label="Slug SEO (auto-généré)" name="slug" required placeholder="nom-du-produit" />
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">Description courte</label>
                 <textarea name="short_description" value={form.short_description} onChange={handleChange} rows={2} className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] resize-none placeholder-gray-600" />
@@ -193,13 +219,13 @@ export default function ProductForm() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">Catégorie <span className="text-[#fff500]">*</span></label>
-                <select name="category" value={form.category} onChange={handleChange} className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500]">
+                <select name="category" value={form.category} onChange={handleChange} className={SELECT_CLS}>
                   {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">Sous-catégorie</label>
-                <select name="subcategory" value={form.subcategory} onChange={handleChange} className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500]">
+                <select name="subcategory" value={form.subcategory} onChange={handleChange} className={SELECT_CLS}>
                   <option value="">Aucune</option>
                   {(SUBCATEGORIES[form.category] || []).map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                 </select>
@@ -210,9 +236,12 @@ export default function ProductForm() {
           <div className="bg-black/40 border border-white/10 p-5">
             <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wide mb-4">Prix & Promotion</h2>
             <div className="grid grid-cols-3 gap-4">
-              <Input label="Prix actuel (€)" name="price" type="number" required />
-              <Input label="Prix original (€)" name="original_price" type="number" placeholder="0" />
-              <Input label="Remise (%)" name="discount" type="number" placeholder="0" />
+              <Input form={form} onChange={handleChange} label="Prix actuel (€)" name="price" type="number" required
+                hint="Base fixe — les autres champs se calculent depuis ce prix" />
+              <Input form={form} onChange={handleChange} label="Prix original (€)" name="original_price" type="number" placeholder="0"
+                hint={form.discount ? `Auto depuis -${form.discount}% sur ${form.price} €` : 'Calcule la remise automatiquement'} />
+              <Input form={form} onChange={handleChange} label="Remise (%)" name="discount" type="number" placeholder="0"
+                hint={form.original_price ? `Auto depuis ${form.price} € → ${form.original_price} €` : 'Calcule le prix original automatiquement'} />
             </div>
           </div>
 
@@ -220,14 +249,14 @@ export default function ProductForm() {
             <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wide mb-4">Caractéristiques</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Dimensions" name="dimensions" placeholder="L 200 x P 90 x H 80 cm" />
-                <Input label="Matière" name="material" placeholder="Tissu, bois, métal..." />
+                <Input form={form} onChange={handleChange} label="Dimensions" name="dimensions" placeholder="L 200 x P 90 x H 80 cm" />
+                <Input form={form} onChange={handleChange} label="Matière" name="material" placeholder="Tissu, bois, métal..." />
               </div>
-              <Input label="Couleurs (séparées par virgule)" name="colors" placeholder="Gris, Beige, Noir..." />
-              <Input label="Tags (séparés par virgule)" name="tags" placeholder="canapé, design, salon..." />
+              <Input form={form} onChange={handleChange} label="Couleurs (séparées par virgule)" name="colors" placeholder="Gris, Beige, Noir..." />
+              <Input form={form} onChange={handleChange} label="Tags (séparés par virgule)" name="tags" placeholder="canapé, design, salon..." />
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Marque" name="brand" />
-                <Input label="Note (ex: 4.8)" name="rating" type="number" placeholder="4.8" />
+                <Input form={form} onChange={handleChange} label="Marque" name="brand" />
+                <Input form={form} onChange={handleChange} label="Note (ex: 4.8)" name="rating" type="number" placeholder="4.8" />
               </div>
             </div>
           </div>
@@ -252,13 +281,13 @@ export default function ProductForm() {
                 <input type="checkbox" name="in_stock" id="in_stock" checked={form.in_stock} onChange={handleChange} className="accent-[#fff500] w-4 h-4" />
                 <label htmlFor="in_stock" className="text-sm text-white font-medium">En stock</label>
               </div>
-              <Input label="Quantité en stock" name="stock_count" type="number" />
+              <Input form={form} onChange={handleChange} label="Quantité en stock" name="stock_count" type="number" />
             </div>
           </div>
 
           <div className="bg-black/40 border border-white/10 p-5">
             <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wide mb-4">Badge produit</h2>
-            <select name="badge" value={form.badge} onChange={handleChange} className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500]">
+            <select name="badge" value={form.badge} onChange={handleChange} className={SELECT_CLS}>
               <option value="">Aucun badge</option>
               <option value="promo">Promo</option>
               <option value="new">Nouvel arrivage</option>
@@ -286,8 +315,8 @@ export default function ProductForm() {
           <div className="bg-black/40 border border-white/10 p-5">
             <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wide mb-4">Avis clients</h2>
             <div className="space-y-3">
-              <Input label="Note moyenne" name="rating" type="number" placeholder="4.8" />
-              <Input label="Nombre d'avis" name="review_count" type="number" />
+              <Input form={form} onChange={handleChange} label="Note moyenne" name="rating" type="number" placeholder="4.8" />
+              <Input form={form} onChange={handleChange} label="Nombre d'avis" name="review_count" type="number" />
             </div>
           </div>
 

@@ -48,7 +48,7 @@ export async function convertToWebP(file: File, quality = 0.85): Promise<Blob> {
 
 export async function uploadImage(
   file: File,
-  bucket: 'product-images' | 'blog-images',
+  bucket: 'product-images' | 'blog-images' | 'category-images',
   prefix = ''
 ): Promise<string> {
   const webpBlob = await convertToWebP(file);
@@ -65,7 +65,7 @@ export async function uploadImage(
   return urlData.publicUrl;
 }
 
-export async function deleteImage(url: string, bucket: 'product-images' | 'blog-images'): Promise<void> {
+export async function deleteImage(url: string, bucket: 'product-images' | 'blog-images' | 'category-images'): Promise<void> {
   const path = url.split(`/${bucket}/`)[1];
   if (!path) return;
   await supabase.storage.from(bucket).remove([path]);

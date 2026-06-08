@@ -30,6 +30,7 @@ export type DbProduct = {
   review_count?: number;
   brand?: string;
   tags?: string[];
+  sort_order?: number;
   created_at: string;
   updated_at: string;
 };
@@ -106,6 +107,14 @@ export type DbCustomer = {
   total_orders: number;
   total_spent: number;
   created_at: string;
+  updated_at: string;
+};
+
+export type DbCategoryImage = {
+  id: string;
+  category_id: string;
+  category_name: string;
+  image_url: string | null;
   updated_at: string;
 };
 

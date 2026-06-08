@@ -4,7 +4,6 @@ import { SlidersHorizontal, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { categories } from '../data/categories';
 import { supabase } from '../lib/supabase';
 import { dbProductToProduct } from '../lib/productUtils';
-import { products as mockProducts } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
 import { Product } from '../types';
 
@@ -17,7 +16,7 @@ const sortOptions = [
 ];
 
 export default function CategoryPage() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, sub } = useParams<{ slug: string; sub?: string }>();
   const [sortBy, setSortBy] = useState('promo');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
   const [showFilters, setShowFilters] = useState(false);
@@ -30,20 +29,29 @@ export default function CategoryPage() {
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    supabase
-      .from('products')
-      .select('*')
-      .eq('category', slug)
-      .eq('in_stock', true)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setAllProducts(data.map(dbProductToProduct));
-        } else {
-          setAllProducts(mockProducts.filter(p => p.category === slug && p.inStock));
-        }
-        setLoading(false);
-      });
-  }, [slug]);
+    const fetchCategoryProducts = async () => {
+      const applyFilters = (q: any) => {
+        q = q.eq('category', slug).eq('in_stock', true);
+        if (sub) q = q.eq('subcategory', sub);
+        return q;
+      };
+
+      let { data, error } = await applyFilters(supabase.from('products').select('*'))
+        .order('sort_order', { ascending: true, nullsFirst: false });
+      if (error) {
+        ({ data } = await applyFilters(supabase.from('products').select('*'))
+          .order('created_at', { ascending: false }));
+      }
+
+      if (data && data.length > 0) {
+        setAllProducts(data.map(dbProductToProduct));
+      } else {
+        setAllProducts([]);
+      }
+      setLoading(false);
+    };
+    fetchCategoryProducts();
+  }, [slug, sub]);
 
   const categoryProducts = useMemo(() => {
     let filtered = allProducts;
@@ -100,17 +108,17 @@ export default function CategoryPage() {
           <div className="flex gap-2 mb-6 flex-wrap">
             <Link
               to={`/categorie/${category.slug}`}
-              className="px-4 py-2 bg-black text-white text-xs font-bold hover:bg-gray-900 transition-colors"
+              className={`px-4 py-2 text-xs font-bold transition-colors ${!sub ? 'bg-black text-white' : 'border border-gray-300 hover:border-black hover:bg-black hover:text-white'}`}
             >
               Tout voir
             </Link>
-            {category.subcategories.map(sub => (
+            {category.subcategories.map(subcat => (
               <Link
-                key={sub.id}
-                to={`/categorie/${category.slug}/${sub.slug}`}
-                className="px-4 py-2 border border-gray-300 text-xs font-semibold hover:border-black hover:bg-black hover:text-white transition-colors"
+                key={subcat.id}
+                to={`/categorie/${category.slug}/${subcat.slug}`}
+                className={`px-4 py-2 text-xs font-semibold transition-colors ${sub === subcat.slug ? 'bg-black text-white border border-black' : 'border border-gray-300 hover:border-black hover:bg-black hover:text-white'}`}
               >
-                {sub.name}
+                {subcat.name}
               </Link>
             ))}
           </div>

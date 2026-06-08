@@ -11,6 +11,7 @@ import CRMAdmin from './pages/CRMAdmin';
 import ContactsAdmin from './pages/ContactsAdmin';
 import StockAdmin from './pages/StockAdmin';
 import AccountingAdmin from './pages/AccountingAdmin';
+import CategoriesAdmin from './pages/CategoriesAdmin';
 
 export default function AdminApp() {
   const [authed, setAuthed] = useState(isAdminAuthenticated());
@@ -31,6 +32,7 @@ export default function AdminApp() {
         <Route path="contacts" element={<ContactsAdmin />} />
         <Route path="stock" element={<StockAdmin />} />
         <Route path="comptabilite" element={<AccountingAdmin />} />
+        <Route path="categories" element={<CategoriesAdmin />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
     </AdminLayout>

@@ -5,16 +5,17 @@ import { Category } from '../../types';
 interface CategoryCardProps {
   category: Category;
   className?: string;
+  imageUrl?: string;
 }
 
-export default function CategoryCard({ category, className = '' }: CategoryCardProps) {
+export default function CategoryCard({ category, className = '', imageUrl }: CategoryCardProps) {
   return (
     <Link
       to={`/categorie/${category.slug}`}
       className={`group relative overflow-hidden block aspect-square bg-gray-100 ${className}`}
     >
       <img
-        src={category.image}
+        src={imageUrl || category.image}
         alt={category.name}
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         loading="lazy"

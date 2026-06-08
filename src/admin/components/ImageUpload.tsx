@@ -1,9 +1,9 @@
 import { useState, useCallback, useRef } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Loader2, Image as ImageIcon, GripVertical } from 'lucide-react';
 import { uploadImage, deleteImage } from '../../lib/imageUtils';
 
 interface ImageUploadProps {
-  bucket: 'product-images' | 'blog-images';
+  bucket: 'product-images' | 'blog-images' | 'category-images';
   value: string[];
   onChange: (urls: string[]) => void;
   maxFiles?: number;
@@ -23,6 +23,10 @@ export default function ImageUpload({
   const [dragOver, setDragOver] = useState(false);
   const [progress, setProgress] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Image drag-and-drop reorder state
+  const [dragImgIdx, setDragImgIdx] = useState<number | null>(null);
+  const [dragOverImgIdx, setDragOverImgIdx] = useState<number | null>(null);
 
   const processFiles = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files).filter(f => f.type.startsWith('image/'));
@@ -62,6 +66,43 @@ export default function ImageUpload({
     onChange(value.filter(u => u !== url));
   };
 
+  // ── Image reorder handlers ──────────────────────────────────
+  const handleImgDragStart = (e: React.DragEvent, idx: number) => {
+    e.stopPropagation();
+    setDragImgIdx(idx);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleImgDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverImgIdx !== idx) setDragOverImgIdx(idx);
+  };
+
+  const handleImgDrop = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (dragImgIdx === null || dragImgIdx === idx) {
+      setDragImgIdx(null);
+      setDragOverImgIdx(null);
+      return;
+    }
+    const reordered = [...value];
+    const [moved] = reordered.splice(dragImgIdx, 1);
+    reordered.splice(idx, 0, moved);
+    onChange(reordered);
+    setDragImgIdx(null);
+    setDragOverImgIdx(null);
+  };
+
+  const handleImgDragEnd = (e: React.DragEvent) => {
+    e.stopPropagation();
+    setDragImgIdx(null);
+    setDragOverImgIdx(null);
+  };
+  // ────────────────────────────────────────────────────────────
+
   return (
     <div>
       <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2 block">{label}</label>
@@ -100,25 +141,50 @@ export default function ImageUpload({
       )}
 
       {value.length > 0 && (
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3">
-          {value.map((url, i) => (
-            <div key={url} className="relative group aspect-square bg-gray-800 overflow-hidden">
-              <img src={url} alt={`Image ${i + 1}`} className="w-full h-full object-cover" />
-              {i === 0 && (
-                <div className="absolute top-1 left-1 bg-[#fff500] text-black text-[9px] font-black px-1.5 py-0.5">
-                  Principale
+        <>
+          {value.length > 1 && (
+            <p className="text-[10px] text-gray-600 mt-2 mb-1 flex items-center gap-1">
+              <GripVertical size={10} /> Glisser pour réorganiser · La 1ʳᵉ image est la photo principale
+            </p>
+          )}
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-2">
+            {value.map((url, i) => {
+              const isDragging = dragImgIdx === i;
+              const isDragOver = dragOverImgIdx === i && dragImgIdx !== i;
+              return (
+                <div
+                  key={url}
+                  draggable
+                  onDragStart={e => handleImgDragStart(e, i)}
+                  onDragOver={e => handleImgDragOver(e, i)}
+                  onDrop={e => handleImgDrop(e, i)}
+                  onDragEnd={handleImgDragEnd}
+                  className={`relative group aspect-square bg-gray-800 overflow-hidden cursor-grab active:cursor-grabbing transition-all ${
+                    isDragging ? 'opacity-40 scale-95' : isDragOver ? 'ring-2 ring-[#fff500]' : ''
+                  }`}
+                >
+                  <img src={url} alt={`Image ${i + 1}`} className="w-full h-full object-cover pointer-events-none" />
+                  {i === 0 && (
+                    <div className="absolute top-1 left-1 bg-[#fff500] text-black text-[9px] font-black px-1.5 py-0.5">
+                      Principale
+                    </div>
+                  )}
+                  {/* Drag handle overlay */}
+                  <div className="absolute bottom-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <GripVertical size={14} className="text-white drop-shadow" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(url)}
+                    className="absolute top-1 right-1 bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
+                  >
+                    <X size={12} />
+                  </button>
                 </div>
-              )}
-              <button
-                type="button"
-                onClick={() => handleRemove(url)}
-                className="absolute top-1 right-1 bg-red-600 text-white p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-700"
-              >
-                <X size={12} />
-              </button>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
 
       {value.length === 0 && !uploading && (

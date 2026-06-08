@@ -14,6 +14,20 @@ const emptyForm = {
   seo_title: '', seo_description: '', seo_keywords: '', og_image: [] as string[], canonical_url: '',
 };
 
+type FormState = typeof emptyForm;
+type InputProps = {
+  label: string; name: string; type?: string; placeholder?: string; hint?: string;
+  form: FormState; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
+const Input = ({ label, name, type = 'text', placeholder = '', hint = '', form, onChange }: InputProps) => (
+  <div>
+    <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">{label}</label>
+    <input type={type} name={name} value={(form as any)[name]} onChange={onChange} placeholder={placeholder}
+      className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] placeholder-gray-600" />
+    {hint && <p className="text-gray-600 text-[10px] mt-1">{hint}</p>}
+  </div>
+);
+
 export default function BlogPostForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -109,15 +123,6 @@ export default function BlogPostForm() {
     </div>
   );
 
-  const Input = ({ label, name, type = 'text', placeholder = '', hint = '' }: any) => (
-    <div>
-      <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">{label}</label>
-      <input type={type} name={name} value={(form as any)[name]} onChange={handleChange} placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] placeholder-gray-600" />
-      {hint && <p className="text-gray-600 text-[10px] mt-1">{hint}</p>}
-    </div>
-  );
-
   return (
     <div className="p-6">
       <div className="flex items-center gap-4 mb-6">
@@ -143,8 +148,8 @@ export default function BlogPostForm() {
             <>
               <div className="bg-black/40 border border-white/10 p-5 space-y-4">
                 <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wide">Contenu de l'article</h2>
-                <Input label="Titre de l'article *" name="title" />
-                <Input label="Slug SEO (auto-généré)" name="slug" placeholder="titre-de-l-article" />
+                <Input form={form} onChange={handleChange} label="Titre de l'article *" name="title" />
+                <Input form={form} onChange={handleChange} label="Slug SEO (auto-généré)" name="slug" placeholder="titre-de-l-article" />
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">Résumé / Extrait</label>
                   <textarea name="excerpt" value={form.excerpt} onChange={handleChange} rows={2}
@@ -206,6 +211,7 @@ export default function BlogPostForm() {
               </div>
 
               <Input
+                form={form} onChange={handleChange}
                 label="Mots-clés SEO (séparés par virgule)"
                 name="seo_keywords"
                 placeholder="meuble haut de gamme, déstockage mobilier, canapé design..."
@@ -213,6 +219,7 @@ export default function BlogPostForm() {
               />
 
               <Input
+                form={form} onChange={handleChange}
                 label="URL canonique"
                 name="canonical_url"
                 placeholder="https://editionmade.fr/blog/titre-article"
@@ -251,13 +258,13 @@ export default function BlogPostForm() {
             </div>
             <div>
               <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">Catégorie</label>
-              <select name="category" value={form.category} onChange={handleChange} className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500]">
+              <select name="category" value={form.category} onChange={handleChange} className="w-full bg-[#1c1c1c] border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] focus:ring-1 focus:ring-[#fff500] transition-colors cursor-pointer [&>option]:bg-[#1c1c1c] [&>option]:text-white [&>option:checked]:bg-[#fff500] [&>option:checked]:text-black">
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <Input label="Auteur" name="author" />
-            <Input label="Temps de lecture (min)" name="read_time" type="number" />
-            <Input label="Tags (séparés par virgule)" name="tags" placeholder="déco, mobilier, conseils..." />
+            <Input form={form} onChange={handleChange} label="Auteur" name="author" />
+            <Input form={form} onChange={handleChange} label="Temps de lecture (min)" name="read_time" type="number" />
+            <Input form={form} onChange={handleChange} label="Tags (séparés par virgule)" name="tags" placeholder="déco, mobilier, conseils..." />
           </div>
 
           {error && <div className="bg-red-900/30 border border-red-500/30 p-3 text-red-300 text-xs">{error}</div>}

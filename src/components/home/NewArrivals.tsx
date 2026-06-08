@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { dbProductToProduct } from '../../lib/productUtils';
-import { products as mockProducts } from '../../data/products';
 import ProductCard from '../ui/ProductCard';
 import { Product } from '../../types';
 
@@ -11,19 +10,26 @@ export default function NewArrivals() {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    supabase
-      .from('products')
-      .select('*')
-      .eq('is_weekly_arrival', true)
-      .eq('in_stock', true)
-      .limit(8)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setProducts(data.map(dbProductToProduct));
-        } else {
-          setProducts(mockProducts.filter(p => p.isWeeklyArrival && p.inStock).slice(0, 8));
-        }
-      });
+    const fetchArrivals = async () => {
+      const filters = { is_weekly_arrival: true, in_stock: true };
+      let { data, error } = await supabase
+        .from('products').select('*')
+        .eq('is_weekly_arrival', filters.is_weekly_arrival)
+        .eq('in_stock', filters.in_stock)
+        .order('sort_order', { ascending: true, nullsFirst: false })
+        .limit(8);
+      if (error) {
+        ({ data } = await supabase
+          .from('products').select('*')
+          .eq('is_weekly_arrival', filters.is_weekly_arrival)
+          .eq('in_stock', filters.in_stock)
+          .order('created_at', { ascending: false })
+          .limit(8));
+      }
+      if (data && data.length > 0) setProducts(data.map(dbProductToProduct));
+      else setProducts([]);
+    };
+    fetchArrivals();
   }, []);
 
   if (products.length === 0) return null;

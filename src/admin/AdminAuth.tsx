@@ -43,9 +43,11 @@ export default function AdminAuth({ onSuccess }: AdminAuthProps) {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#fff500] mb-4">
             <Lock size={28} className="text-black" />
           </div>
-          <h1 className="font-display font-bold text-2xl text-white">
-            EDITION<span className="text-[#fff500] bg-white/10 px-1 ml-0.5">MADE</span>
-          </h1>
+          <img
+            src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
+            alt="Edition Made"
+            className="h-10 w-auto object-contain mx-auto brightness-0 invert"
+          />
           <p className="text-gray-400 text-sm mt-1">Administration</p>
         </div>
 

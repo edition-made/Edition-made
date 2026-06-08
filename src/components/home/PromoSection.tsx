@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Flame, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { dbProductToProduct } from '../../lib/productUtils';
-import { products as mockProducts } from '../../data/products';
 import ProductCard from '../ui/ProductCard';
 import { Product } from '../../types';
 
@@ -22,7 +21,7 @@ export default function PromoSection() {
         if (data && data.length > 0) {
           setProducts(data.map(dbProductToProduct));
         } else {
-          setProducts(mockProducts.filter(p => p.discount && p.discount >= 40).slice(0, 8));
+          setProducts([]);
         }
       });
   }, []);
