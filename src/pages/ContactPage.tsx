@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, MessageCircle, Send, Check } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -12,14 +11,7 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await supabase.from('contact_submissions').insert({
-      name: form.name,
-      email: form.email,
-      phone: form.phone || null,
-      subject: form.subject || null,
-      message: form.message,
-      status: 'new',
-    });
+    // Save en base + envoi emails gérés côté serveur
     await fetch('/api/send-contact-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

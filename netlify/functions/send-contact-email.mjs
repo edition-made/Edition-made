@@ -1,7 +1,14 @@
+import { createClient } from '@supabase/supabase-js';
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
 const ADMIN_EMAIL = 'contact@editionmade.com';
 const FROM_EMAIL = 'Edition Made <noreply@editionmade.com>';
 const LOGO_URL = 'https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp';
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 function json(statusCode, body) {
   return {
@@ -71,6 +78,17 @@ export const handler = async (event) => {
 
   const { name, email, phone, subject, message } = payload;
   if (!name || !email || !message) return json(400, { error: 'Champs obligatoires manquants' });
+
+  // Enregistrement en base de données
+  const { error: dbError } = await supabase.from('contact_submissions').insert({
+    name,
+    email,
+    phone: phone || null,
+    subject: subject || null,
+    message,
+    status: 'new',
+  });
+  if (dbError) console.error('[send-contact-email] DB insert error:', dbError.message);
 
   const sep = `<tr><td style="padding:0 32px;"><hr style="border:none;border-top:1px solid #e8e8e0;margin:0;"/></td></tr>`;
   const msgHtml = message.replace(/\n/g, '<br/>');
