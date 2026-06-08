@@ -17,6 +17,10 @@ import ArrivagePage from './pages/ArrivagePage';
 import FAQPage from './pages/FAQPage';
 import AdminApp from './admin/AdminApp';
 import OrderSuccessPage from './pages/OrderSuccessPage';
+import SearchPage from './pages/SearchPage';
+import DeliveryPolicyPage from './pages/DeliveryPolicyPage';
+import ReturnPolicyPage from './pages/ReturnPolicyPage';
+import MentionsLegalesPage from './pages/MentionsLegalesPage';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -51,6 +55,10 @@ export default function App() {
           <Route path="/blog/:slug" element={<Layout><BlogPostPage /></Layout>} />
           <Route path="/contact" element={<Layout><ContactPage /></Layout>} />
           <Route path="/faq" element={<Layout><FAQPage /></Layout>} />
+          <Route path="/recherche" element={<Layout><SearchPage /></Layout>} />
+          <Route path="/livraison" element={<Layout><DeliveryPolicyPage /></Layout>} />
+          <Route path="/retours" element={<Layout><ReturnPolicyPage /></Layout>} />
+          <Route path="/mentions-legales" element={<Layout><MentionsLegalesPage /></Layout>} />
           <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>
       </CartProvider>

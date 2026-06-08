@@ -126,7 +126,7 @@ export default function Header() {
               />
             </Link>
 
-            <nav className="hidden xl:flex items-stretch h-full overflow-x-auto scrollbar-hide">
+            <nav className="hidden xl:flex items-stretch h-full">
               {navLinks.map((link) => (
                 <div
                   key={link.href}

@@ -122,7 +122,19 @@ export default function Footer() {
 
         <div className="border-t border-white/10 pt-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-600">
-            <p>© 2024 Edition Made — Tous droits réservés</p>
+            <p>
+              © 2024 Edition Made — Tous droits réservés
+              <span className="mx-2 text-gray-700">·</span>
+              Site réalisé par{' '}
+              <a
+                href="https://webfityou.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold underline text-gray-400 hover:text-white transition-colors"
+              >
+                WebFitYou
+              </a>
+            </p>
             <div className="flex flex-wrap justify-center gap-4">
               <span className="text-gray-500">Meuble haut de gamme pas cher</span>
               <span className="text-gray-600">|</span>

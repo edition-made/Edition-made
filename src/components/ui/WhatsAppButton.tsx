@@ -18,7 +18,7 @@ export default function WhatsAppButton() {
   }, []);
 
   return (
-    <div ref={ref} className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-2">
+    <div ref={ref} className="fixed bottom-6 left-6 z-50 flex flex-col items-start gap-2">
       {/* Volet déroulant */}
       <div
         className={`bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden transition-all duration-300 origin-bottom-right ${

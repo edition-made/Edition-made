@@ -176,7 +176,7 @@ export default function BlogPage() {
         )}
 
         <div className="mt-16 bg-black text-white p-8 text-center">
-          <h2 className="font-display font-bold text-2xl text-white mb-2">Conseils SEO — Mobilier haut de gamme pas cher</h2>
+          <h2 className="font-display font-bold text-2xl text-white mb-2">Edition Made — Mobilier haut de gamme pas cher</h2>
           <p className="text-gray-400 text-sm mb-6 max-w-2xl mx-auto">
             Edition Made est votre spécialiste du <strong className="text-white">déstockage mobilier haut de gamme</strong> en Île-de-France. Canapés, tables, fauteuils, literie — découvrez nos arrivages et promotions. Livraison France entière ou retrait dans notre showroom de 500m² à Saint-Maurice (94).
           </p>

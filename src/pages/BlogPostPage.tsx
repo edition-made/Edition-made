@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Clock, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
+import { Clock, ArrowLeft, ArrowRight, Tag, ChevronDown } from 'lucide-react';
 import { supabase, DbBlogPost } from '../lib/supabase';
 import { blogPosts as mockPosts } from '../data/blog';
 import { BlogPost } from '../types';
@@ -23,6 +23,73 @@ const CAT_COLORS: Record<string, string> = {
   Actualités: 'bg-rose-100 text-rose-800',
   Tendances: 'bg-orange-100 text-orange-800',
 };
+
+const FAQ_BY_CATEGORY: Record<string, { q: string; a: string }[]> = {
+  Conseils: [
+    { q: 'Où acheter des meubles haut de gamme pas chers en Île-de-France ?', a: 'Edition Made, showroom de 500 m² à Saint-Maurice (94), propose des meubles haut de gamme en déstockage jusqu\'à -60%. Retrait sur place ou livraison France entière.' },
+    { q: 'Comment bien choisir ses meubles ?', a: 'Il faut considérer les dimensions de votre espace, le style de décoration, la qualité des matériaux et votre budget. N\'hésitez pas à visiter notre showroom pour vous faire conseiller par nos experts.' },
+    { q: 'Proposez-vous des conseils en aménagement intérieur ?', a: 'Oui, notre équipe en showroom vous accompagne dans le choix des meubles adaptés à votre espace. Contactez-nous par téléphone, WhatsApp ou via notre formulaire de contact.' },
+  ],
+  'Bons plans': [
+    { q: 'Comment profiter des meilleures promotions chez Edition Made ?', a: 'Visitez régulièrement notre page Arrivages et Promotions pour ne manquer aucune offre. Les arrivages changent fréquemment et les stocks sont limités. Abonnez-vous à notre newsletter.' },
+    { q: 'Y a-t-il des soldes ou des périodes de déstockage particulières ?', a: 'Chez Edition Made, les prix déstockage sont permanents — pas besoin d\'attendre les soldes. De plus, nous organisons régulièrement des opérations spéciales avec des remises supplémentaires annoncées sur nos réseaux sociaux.' },
+    { q: 'Peut-on négocier les prix en magasin ?', a: 'Nos prix sont déjà les plus bas du marché grâce à notre modèle de déstockage. Pour les achats en volume ou les projets d\'aménagement complets, contactez notre équipe pour étudier votre projet.' },
+  ],
+  Inspiration: [
+    { q: 'Où trouver de l\'inspiration pour décorer son intérieur ?', a: 'Parcourez notre blog et nos réseaux sociaux pour des idées décoration. Visitez aussi notre showroom où nos espaces sont mis en scène pour vous inspirer avec des associations de meubles et d\'accessoires.' },
+    { q: 'Comment mélanger les styles de décoration ?', a: 'La clé est de choisir un style dominant et d\'y ajouter des touches d\'autres styles. Nos conseillers en showroom peuvent vous aider à créer un intérieur cohérent et personnalisé à partir de nos produits en stock.' },
+    { q: 'Quelles sont les tendances déco actuelles ?', a: 'Les styles naturels (bois, rotin, lin), le minimalisme japandi et les couleurs terreuses sont très tendances. Visitez nos arrivages réguliers pour découvrir les nouvelles pièces qui correspondent à ces tendances.' },
+  ],
+  Tendances: [
+    { q: 'Quelles tendances mobilier dominent en 2026 ?', a: 'Le mobilier en matériaux naturels (chêne, rotin, marbre), les lignes épurées du style scandinave et les pièces multifonctionnelles pour les petits espaces sont très prisés. Découvrez notre sélection en showroom.' },
+    { q: 'Comment intégrer les nouvelles tendances sans se ruiner ?', a: 'Le déstockage est idéal pour adopter les tendances à prix réduit. Edition Made renouvelle régulièrement ses stocks avec des pièces dans l\'air du temps, achetées directement auprès des fabricants.' },
+    { q: 'Le mobilier haut de gamme se démode-t-il vite ?', a: 'Le mobilier de qualité conçu avec des matériaux nobles (bois massif, cuir véritable, métal) est intemporel. Il traverse les tendances et constitue un investissement durable pour votre intérieur.' },
+  ],
+  Actualités: [
+    { q: 'Comment être informé des nouveaux arrivages Edition Made ?', a: 'Inscrivez-vous à notre newsletter depuis le bas de la page d\'accueil et suivez-nous sur Instagram et Facebook pour être alerté en temps réel de nos nouvelles réceptions.' },
+    { q: 'Edition Made propose-t-il des événements spéciaux ?', a: 'Oui, nous organisons régulièrement des portes ouvertes, ventes privées et opérations déstockage exceptionnelles. Restez connecté à nos réseaux sociaux et newsletter pour être invité en priorité.' },
+    { q: 'Peut-on commander en ligne et se faire livrer ?', a: 'Oui, notre boutique en ligne permet de commander et de se faire livrer partout en France métropolitaine. Le paiement est sécurisé par Stripe avec possibilité de payer en 3x ou 4x sans frais dès 100€.' },
+  ],
+};
+
+const DEFAULT_FAQ = [
+  { q: 'Comment acheter chez Edition Made ?', a: 'Vous pouvez acheter directement sur notre site en ligne avec livraison France entière, ou visiter notre showroom de 500 m² à Saint-Maurice (94) pour voir les produits en vrai. Paiement sécurisé par carte ou en 3x/4x sans frais.' },
+  { q: 'Quelle est la politique de retour ?', a: 'Vous bénéficiez de 14 jours pour retourner votre commande à compter de la réception. Le produit doit être en parfait état et dans son emballage d\'origine. Consultez notre page Politique de retour pour tous les détails.' },
+  { q: 'Les produits sont-ils neufs ?', a: 'Oui, tous nos produits sont neufs. Il s\'agit de fins de série, surplus de production ou collections discontinuées achetées directement aux fabricants — jamais d\'occasion ni de reconditionnés.' },
+];
+
+function BlogFAQ({ category }: { category: string }) {
+  const [open, setOpen] = useState<number | null>(null);
+  const items = FAQ_BY_CATEGORY[category] || DEFAULT_FAQ;
+
+  return (
+    <div className="border-t border-gray-100 py-12 bg-white">
+      <div className="max-w-screen-xl mx-auto px-4">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="font-display font-bold text-2xl text-black mb-6">Questions fréquentes</h2>
+          <div className="space-y-2">
+            {items.map((faq, i) => (
+              <div key={i} className="border border-gray-200">
+                <button
+                  onClick={() => setOpen(open === i ? null : i)}
+                  className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-bold text-sm text-black pr-4">{faq.q}</span>
+                  <ChevronDown size={16} className={`flex-shrink-0 text-gray-400 transition-transform duration-200 ${open === i ? 'rotate-180' : ''}`} />
+                </button>
+                {open === i && (
+                  <div className="px-5 pb-4">
+                    <p className="text-sm text-gray-600 leading-relaxed">{faq.a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -162,6 +229,9 @@ export default function BlogPostPage() {
       </div>
 
       {/* ── Articles recommandés en bas de page ── */}
+      {/* ── FAQ article ── */}
+      <BlogFAQ category={post.category} />
+
       {others.length > 0 && (
         <div className="border-t border-gray-100 bg-gray-50 py-12">
           <div className="max-w-screen-xl mx-auto px-4">

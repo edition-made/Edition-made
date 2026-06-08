@@ -7,19 +7,21 @@ import ReviewsSection from '../components/home/ReviewsSection';
 import ShowroomSection from '../components/home/ShowroomSection';
 import WhyUs from '../components/home/WhyUs';
 import BlogPreview from '../components/home/BlogPreview';
+import HomeFAQ from '../components/home/HomeFAQ';
 
 export default function HomePage() {
   return (
     <>
       <Hero />
+      <PaymentSection />
       <PromoSection />
       <NewArrivals />
       <CategoriesSection />
-      <PaymentSection />
       <WhyUs />
       <ShowroomSection />
       <ReviewsSection />
       <BlogPreview />
+      <HomeFAQ />
     </>
   );
 }
