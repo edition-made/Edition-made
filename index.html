@@ -55,6 +55,9 @@
       "priceRange": "€€"
     }
     </script>
+    <!-- Stripe.js préchargé pour éliminer la latence au checkout -->
+    <link rel="preconnect" href="https://js.stripe.com" />
+    <script src="https://js.stripe.com/v3/" async></script>
   </head>
   <body>
     <div id="root"></div>

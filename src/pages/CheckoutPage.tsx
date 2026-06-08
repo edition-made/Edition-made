@@ -5,7 +5,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../context/CartContext';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 const steps = ['Livraison', 'Paiement', 'Confirmation'];
 
@@ -320,7 +321,7 @@ export default function CheckoutPage() {
             )}
 
             {/* ── Étape 1 : Stripe Elements ───────────────────── */}
-            {step === 1 && clientSecret && (
+            {step === 1 && clientSecret && stripePromise && (
               <Elements
                 stripe={stripePromise}
                 options={{ clientSecret, appearance: stripeAppearance, locale: 'fr' }}
@@ -331,6 +332,15 @@ export default function CheckoutPage() {
                   onBack={() => setStep(0)}
                 />
               </Elements>
+            )}
+            {step === 1 && !stripePromise && (
+              <div className="bg-white p-6">
+                <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 p-4 text-sm">
+                  <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                  <span>Le module de paiement n'est pas configuré. Contactez-nous par téléphone ou WhatsApp pour finaliser votre commande.</span>
+                </div>
+                <button onClick={() => setStep(0)} className="btn-outline mt-4">Retour</button>
+              </div>
             )}
           </div>
 

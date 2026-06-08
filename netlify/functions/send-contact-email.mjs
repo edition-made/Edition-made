@@ -1,6 +1,6 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
 const ADMIN_EMAIL = 'contact@editionmade.com';
-const FROM_EMAIL = 'Edition Made <noreply@editionmade.com>';
+const FROM_EMAIL = 'Edition Made <onboarding@resend.dev>';
 const LOGO_URL = 'https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp';
 
 function json(statusCode, body) {
@@ -36,8 +36,8 @@ ${content}
 
 async function sendEmail(to, subject, html) {
   if (!RESEND_API_KEY) {
-    console.warn('[send-contact-email] RESEND_API_KEY manquante');
-    return;
+    console.error('[send-contact-email] RESEND_API_KEY manquante — email non envoyé');
+    return false;
   }
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -47,10 +47,13 @@ async function sendEmail(to, subject, html) {
     },
     body: JSON.stringify({ from: FROM_EMAIL, to, subject, html }),
   });
+  const body = await res.json().catch(() => ({}));
   if (!res.ok) {
-    const err = await res.text();
-    console.error('[send-contact-email] Resend error:', err);
+    console.error('[send-contact-email] Resend error', res.status, JSON.stringify(body));
+    return false;
   }
+  console.log('[send-contact-email] Envoyé à', to, '— id:', body.id);
+  return true;
 }
 
 export const handler = async (event) => {

@@ -10,7 +10,7 @@ const supabase = createClient(
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
 const ADMIN_EMAIL = 'contact@editionmade.com';
-const FROM_EMAIL = 'Edition Made <noreply@editionmade.com>';
+const FROM_EMAIL = 'Edition Made <onboarding@resend.dev>';
 const LOGO_URL = 'https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp';
 
 // ── Helpers email ────────────────────────────────────────────────────────────
