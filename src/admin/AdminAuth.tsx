@@ -46,7 +46,7 @@ export default function AdminAuth({ onSuccess }: AdminAuthProps) {
           <img
             src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
             alt="Edition Made"
-            className="h-10 w-auto object-contain mx-auto brightness-0 invert"
+            className="h-10 w-auto object-contain mx-auto" style={{ filter: 'brightness(0) invert(1)' }}
           />
           <p className="text-gray-400 text-sm mt-1">Administration</p>
         </div>

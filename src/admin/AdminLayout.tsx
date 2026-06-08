@@ -100,7 +100,7 @@ export default function AdminLayout({ children, onLogout }: AdminLayoutProps) {
             <img
               src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
               alt="Edition Made"
-              className="h-6 w-auto object-contain brightness-0 invert flex-shrink-0"
+              className="h-6 w-auto object-contain flex-shrink-0" style={{ filter: 'brightness(0) invert(1)' }}
             />
             <span className="text-gray-400 text-xs font-normal">Admin</span>
           </div>
@@ -138,7 +138,7 @@ export default function AdminLayout({ children, onLogout }: AdminLayoutProps) {
               <img
                 src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
                 alt="Edition Made"
-                className="h-6 w-auto object-contain brightness-0 invert flex-shrink-0"
+                className="h-6 w-auto object-contain flex-shrink-0" style={{ filter: 'brightness(0) invert(1)' }}
               />
               <span className="text-gray-400 text-xs font-normal">Admin</span>
             </div>
