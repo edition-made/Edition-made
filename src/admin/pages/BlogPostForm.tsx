@@ -222,7 +222,7 @@ export default function BlogPostForm() {
                 form={form} onChange={handleChange}
                 label="URL canonique"
                 name="canonical_url"
-                placeholder="https://editionmade.fr/blog/titre-article"
+                placeholder="https://editionmade.com/blog/titre-article"
                 hint="Laisser vide pour utiliser l'URL par défaut"
               />
 
@@ -241,7 +241,7 @@ export default function BlogPostForm() {
                 <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Aperçu Google</p>
                 <div className="space-y-0.5">
                   <p className="text-[#8ab4f8] text-sm">{form.seo_title || form.title || 'Titre de l\'article'}</p>
-                  <p className="text-[#4d8c57] text-xs">editionmade.fr › blog › {form.slug || 'slug-article'}</p>
+                  <p className="text-[#4d8c57] text-xs">editionmade.com › blog › {form.slug || 'slug-article'}</p>
                   <p className="text-gray-400 text-xs leading-relaxed">{form.seo_description || form.excerpt || 'Description de l\'article...'}</p>
                 </div>
               </div>

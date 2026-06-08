@@ -78,7 +78,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-bold text-sm mb-1">Email</p>
-                  <a href="mailto:contact@editionmade.fr" className="text-sm text-gray-600 hover:text-black transition-colors">contact@editionmade.fr</a>
+                  <a href="mailto:contact@editionmade.com" className="text-sm text-gray-600 hover:text-black transition-colors">contact@editionmade.com</a>
                 </div>
               </div>
               <div className="flex items-start gap-4">

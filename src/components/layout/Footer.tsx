@@ -93,8 +93,8 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={16} className="text-[#fff500] flex-shrink-0" />
-                <a href="mailto:contact@editionmade.fr" className="text-sm text-gray-400 hover:text-white transition-colors">
-                  contact@editionmade.fr
+                <a href="mailto:contact@editionmade.com" className="text-sm text-gray-400 hover:text-white transition-colors">
+                  contact@editionmade.com
                 </a>
               </li>
               <li className="flex items-start gap-3">

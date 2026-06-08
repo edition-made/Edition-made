@@ -135,7 +135,7 @@ export default function ShowroomPage() {
               </div>
               <div>
                 <p className="text-gray-400 text-xs uppercase mb-1">Email</p>
-                <a href="mailto:contact@editionmade.fr" className="text-white hover:text-[#fff500] transition-colors">contact@editionmade.fr</a>
+                <a href="mailto:contact@editionmade.com" className="text-white hover:text-[#fff500] transition-colors">contact@editionmade.com</a>
               </div>
             </div>
           </div>

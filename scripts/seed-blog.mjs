@@ -45,7 +45,7 @@ const articles = [
     seo_description: "Canapé fixe, convertible ou d'angle, tissu ou cuir — notre guide expert vous aide à choisir le parfait canapé pour votre salon, avec les meilleurs prix chez Edition Made.",
     seo_keywords: 'choisir canapé, canapé design, canapé pas cher, canapé haut de gamme, guide canapé salon',
     og_image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/guide-choisir-canape-salon',
+    canonical_url: 'https://editionmade.com/blog/guide-choisir-canape-salon',
     content: `
 ${resume(`Le ${b('canapé')} est la pièce centrale de tout salon. Forme, taille, revêtement, structure : ce guide vous donne tous les critères pour choisir le modèle idéal. Que vous soyez à la recherche d'un ${b('canapé fixe')}, ${b('convertible')} ou d'angle, vous trouverez ici les conseils d'experts Edition Made pour ne pas vous tromper.`)}
 
@@ -97,7 +97,7 @@ ${img('https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?w=900&q=80',
     seo_description: 'Comment profiter du déstockage mobilier haut de gamme ? Astuces et conseils pour acheter canapés, tables et fauteuils de luxe à prix cassés chez Edition Made Saint-Maurice.',
     seo_keywords: 'déstockage mobilier, meuble pas cher, outlet mobilier Paris, mobilier haut de gamme prix réduit, destockage canapé',
     og_image: 'https://images.unsplash.com/photo-1616047006789-b7af5afb8c20?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/destockage-mobilier-haut-de-gamme-meilleures-offres',
+    canonical_url: 'https://editionmade.com/blog/destockage-mobilier-haut-de-gamme-meilleures-offres',
     content: `
 ${resume(`Le ${b('déstockage mobilier')} permet d'acquérir des meubles haut de gamme de grandes marques à des prix bien inférieurs au tarif boutique. Fins de série, surstock, collections expo : Edition Made vous explique comment fonctionnent ces offres exceptionnelles et comment en tirer le meilleur parti.`)}
 
@@ -147,7 +147,7 @@ ${img('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&q=80', 'C
     seo_description: 'Biophilie, minimalisme chaud, palettes terracotta : les grandes tendances décoration 2025 décryptées par Edition Made. Comment meubler votre intérieur avec style cette année.',
     seo_keywords: 'tendances déco 2025, tendances intérieur, style déco maison, mobilier tendance, couleurs déco 2025',
     og_image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/tendances-deco-interieur-2025-styles-matieres-couleurs',
+    canonical_url: 'https://editionmade.com/blog/tendances-deco-interieur-2025-styles-matieres-couleurs',
     content: `
 ${resume(`En 2025, la décoration intérieure conjugue ${b('minimalisme chaud')}, matières naturelles et touches de couleur affirmées. Le ${b('mobilier haut de gamme')} s'impose comme investissement durable. Edition Made fait le tour des tendances incontournables à adopter dès maintenant.`)}
 
@@ -197,7 +197,7 @@ ${img('https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=900&q=80', 'S
     seo_description: 'Fauteuil club, scandinave ou pivotant : nos conseils pour choisir et intégrer fauteuils et poufs avec style. Découvrez la sélection Edition Made à prix déstockés.',
     seo_keywords: 'fauteuil design, pouf salon, fauteuil confort, fauteuil club, décoration salon',
     og_image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/fauteuils-poufs-integrer-style-interieur',
+    canonical_url: 'https://editionmade.com/blog/fauteuils-poufs-integrer-style-interieur',
     content: `
 ${resume(`Le ${b('fauteuil')} et le ${b('pouf')} sont des pièces complémentaires qui enrichissent n'importe quel salon. Ils apportent confort supplémentaire, personnalité et flexibilité. Ce guide vous aide à les choisir et à les intégrer harmonieusement dans votre décoration intérieure.`)}
 
@@ -247,7 +247,7 @@ ${img('https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=900&q=80',
     seo_description: 'Table en bois massif, marbre, verre ou métal — ronde ou rectangulaire : nos conseils pour choisir la table de salle à manger idéale. Sélection Edition Made en déstockage.',
     seo_keywords: 'table salle à manger, table de repas, table design, table bois massif, choisir table manger',
     og_image: 'https://images.unsplash.com/photo-1449247709967-d4461a6a6103?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/choisir-table-salle-manger-guide-pratique',
+    canonical_url: 'https://editionmade.com/blog/choisir-table-salle-manger-guide-pratique',
     content: `
 ${resume(`La ${b('table de salle à manger')} est le cœur de la vie familiale et sociale. Entre la forme (ronde, rectangulaire, extensible), les matières (bois massif, marbre, verre) et la taille, ce guide vous aide à trouver le modèle parfait pour votre espace et votre budget chez Edition Made.`)}
 
@@ -297,7 +297,7 @@ ${img('https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=900&q=80', 'S
     seo_description: 'Matelas latex, ressorts ou mémoire de forme, sommier lattes ou coffre : notre guide complet pour choisir la literie haut de gamme idéale. Sélection Edition Made en déstockage.',
     seo_keywords: 'literie haut de gamme, matelas premium, bien dormir, choisir matelas, sommier literie luxe',
     og_image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/literie-haut-de-gamme-bien-dormir-bien-choisir',
+    canonical_url: 'https://editionmade.com/blog/literie-haut-de-gamme-bien-dormir-bien-choisir',
     content: `
 ${resume(`Un bon ${b('matelas')} et un ${b('sommier adapté')} sont les fondations d'une nuit réparatrice. Ce guide décrypte les différentes technologies (latex, ressorts, mémoire de forme), les niveaux de fermeté et l'importance du sommier pour vous aider à constituer la literie parfaite. Edition Made propose une sélection de ${b('literie haut de gamme')} à prix déstockés.`)}
 
@@ -347,7 +347,7 @@ ${img('https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=900&q=80',
     seo_description: 'Salon de jardin, bains de soleil, table de terrasse — comment choisir le mobilier extérieur durable et élégant ? Découvrez la sélection Edition Made en déstockage.',
     seo_keywords: 'mobilier extérieur, salon de jardin, meuble terrasse, mobilier outdoor, aménager jardin terrasse',
     og_image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/amenager-terrasse-jardin-guide-mobilier-exterieur',
+    canonical_url: 'https://editionmade.com/blog/amenager-terrasse-jardin-guide-mobilier-exterieur',
     content: `
 ${resume(`Aménager sa terrasse ou son jardin avec un ${b('mobilier extérieur')} de qualité transforme cet espace en véritable pièce de vie. Teck, résine tressée, aluminium ou acier galvanisé : chaque matière a ses avantages. Ce guide vous aide à choisir le bon mobilier selon votre style, votre budget et vos contraintes climatiques.`)}
 
@@ -397,7 +397,7 @@ ${img('https://images.unsplash.com/photo-1484154218962-a197022b5858?w=900&q=80',
     seo_description: 'Chaise rembourrée, design, empilable ou tabouret de bar : comment choisir des chaises élégantes et confortables pour votre salle à manger ? Guide Edition Made.',
     seo_keywords: 'chaise design, tabouret bar, chaise salle à manger, chaise ergonomique, tabouret cuisine',
     og_image: 'https://images.unsplash.com/photo-1503602642458-232111445657?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/chaises-tabourets-design-style-ergonomie',
+    canonical_url: 'https://editionmade.com/blog/chaises-tabourets-design-style-ergonomie',
     content: `
 ${resume(`Les ${b('chaises')} et ${b('tabourets')} sont souvent relégués au second plan lors de l'aménagement d'une pièce. Pourtant, ils jouent un rôle clé dans le confort quotidien et l'esthétique de votre intérieur. Ce guide vous aide à trouver le parfait équilibre entre style, durabilité et ergonomie.`)}
 
@@ -447,7 +447,7 @@ ${img('https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=900&q=80',
     seo_description: 'Coussins, miroirs, vases, tapis et luminaires : nos secrets pour choisir et agencer les accessoires déco qui donnent de la personnalité à votre intérieur. Sélection Edition Made.',
     seo_keywords: 'accessoires déco, décoration intérieure, personnaliser intérieur, accessoires maison, déco salon',
     og_image: 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/accessoires-deco-secrets-personnaliser-interieur',
+    canonical_url: 'https://editionmade.com/blog/accessoires-deco-secrets-personnaliser-interieur',
     content: `
 ${resume(`Les ${b('accessoires décoratifs')} sont ce qui transforme une maison en foyer. Coussins, miroirs, plantes, tableaux, vases et luminaires : ce guide vous révèle les secrets pour choisir et agencer les bons éléments afin de créer un intérieur qui vous ressemble vraiment.`)}
 
@@ -497,7 +497,7 @@ ${img('https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=900&q=80',
     seo_description: 'Showroom 500 m² de mobilier haut de gamme déstocké à Saint-Maurice (94), Val-de-Marne, Île-de-France. Canapés, tables, fauteuils, literie à prix cassés. Venez nous rendre visite !',
     seo_keywords: 'showroom mobilier Paris, meuble Saint-Maurice 94, outlet mobilier Île-de-France, déstockage meuble Val-de-Marne, Edition Made showroom',
     og_image: 'https://images.unsplash.com/photo-1631679706909-1844bbd07221?w=1200&q=80',
-    canonical_url: 'https://editionmade.fr/blog/showroom-edition-made-saint-maurice-94-mobilier-ile-de-france',
+    canonical_url: 'https://editionmade.com/blog/showroom-edition-made-saint-maurice-94-mobilier-ile-de-france',
     content: `
 ${resume(`Le ${b('showroom Edition Made')} à Saint-Maurice (94) est l'unique destination de déstockage mobilier haut de gamme en Île-de-France avec plus de ${b('500 m² de surface')}. Canapés de luxe, tables design, fauteuils, literie premium : tout y est disponible à des prix bien inférieurs aux boutiques traditionnelles.`)}
 

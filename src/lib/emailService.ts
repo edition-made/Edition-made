@@ -1,8 +1,8 @@
 const LOGO_URL =
   'https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp';
 
-const ADMIN_EMAIL = 'contact@editionmade.fr';
-const FROM = 'Edition Made <noreply@editionmade.fr>';
+const ADMIN_EMAIL = 'contact@editionmade.com';
+const FROM = 'Edition Made <noreply@editionmade.com>';
 
 // ── Envoi via fetch (compatible browser — pas de SDK Node.js) ────────────────
 
@@ -57,7 +57,7 @@ function wrapHtml(content: string): string {
         <p style="margin:0 0 4px;color:#888;font-size:11px;">14 avenue des Canadiens · 94410 Saint-Maurice (Val-de-Marne)</p>
         <p style="margin:0 0 4px;color:#888;font-size:11px;">Lun–Sam : 10h–19h · Dim : 10h–17h</p>
         <p style="margin:0;color:#888;font-size:11px;">
-          <a href="mailto:contact@editionmade.fr" style="color:#fff500;text-decoration:none;">contact@editionmade.fr</a>
+          <a href="mailto:contact@editionmade.com" style="color:#fff500;text-decoration:none;">contact@editionmade.com</a>
         </p>
       </td></tr>
 
@@ -144,7 +144,7 @@ export async function sendOrderConfirmation(data: OrderEmailData): Promise<void>
       <p style="margin:0 0 16px;font-size:13px;color:#555;">
         Vous avez une question ? Contactez-nous par email ou passez directement en showroom.
       </p>
-      <a href="https://editionmade.fr/contact"
+      <a href="https://editionmade.com/contact"
          style="display:inline-block;background:#fff500;color:#000;font-weight:bold;font-size:13px;padding:12px 24px;text-decoration:none;letter-spacing:0.5px;">
         Nous contacter
       </a>

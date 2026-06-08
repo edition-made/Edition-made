@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: 'Comment contacter le service client ?',
-    a: 'Vous pouvez nous contacter par téléphone au 06 60 22 25 25 (du lundi au samedi de 10h à 19h), par WhatsApp, par email à contact@editionmade.fr, ou directement en vous rendant dans notre showroom.',
+    a: 'Vous pouvez nous contacter par téléphone au 06 60 22 25 25 (du lundi au samedi de 10h à 19h), par WhatsApp, par email à contact@editionmade.com, ou directement en vous rendant dans notre showroom.',
   },
 ];
 
