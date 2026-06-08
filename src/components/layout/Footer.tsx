@@ -133,8 +133,8 @@ export default function Footer() {
               <span className="text-gray-500">Prix d'usine Île-de-France</span>
             </div>
             <div className="flex items-center gap-3">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Mastercard_2019_logo.svg/800px-Mastercard_2019_logo.svg.png" alt="Mastercard" className="h-5 opacity-60" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/800px-Visa_Inc._logo.svg.png" alt="Visa" className="h-4 opacity-60" />
+              <img src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/mastercard.webp" alt="Mastercard" className="h-5 opacity-60" />
+              <img src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/Visa.webp" alt="Visa" className="h-5 opacity-60" />
             </div>
           </div>
         </div>
