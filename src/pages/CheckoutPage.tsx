@@ -48,6 +48,12 @@ function StripePaymentForm({ orderNumber, total, onBack }: PaymentFormProps) {
 
     // Paiement confirmé sans redirection (pas de 3DS)
     if (result.paymentIntent?.status === 'succeeded') {
+      // Envoi email de confirmation + mise à jour commande côté serveur
+      fetch('/api/send-order-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentIntentId: result.paymentIntent.id, orderNumber }),
+      }).catch(console.error);
       navigate(`/commande-confirmee?order_number=${orderNumber}&redirect_status=succeeded`);
     }
   };
