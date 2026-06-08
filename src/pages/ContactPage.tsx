@@ -79,8 +79,8 @@ export default function ContactPage() {
                 <div>
                   <p className="font-bold text-sm mb-1">Horaires</p>
                   <p className="text-sm text-gray-600">
-                    Lun–Sam : 10h00 – 19h00<br />
-                    Dimanche : 10h00 – 17h00
+                    Lun–Sam : 10h00 – 18h30<br />
+                    Dimanche : 14h00 – 18h30
                   </p>
                 </div>
               </div>

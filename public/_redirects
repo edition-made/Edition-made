@@ -1,1 +1,4 @@
-/* /index.html 200
+/api/create-payment-intent  /.netlify/functions/create-payment-intent  200
+/api/stripe-webhook         /.netlify/functions/stripe-webhook          200
+/api/send-contact-email     /.netlify/functions/send-contact-email      200
+/*                          /index.html                                 200
