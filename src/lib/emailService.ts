@@ -1,12 +1,30 @@
-import { Resend } from 'resend';
-
-const resend = new Resend(import.meta.env.VITE_RESEND_API_KEY);
-
 const LOGO_URL =
   'https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp';
 
 const ADMIN_EMAIL = 'contact@editionmade.fr';
 const FROM = 'Edition Made <noreply@editionmade.fr>';
+
+// ── Envoi via fetch (compatible browser — pas de SDK Node.js) ────────────────
+
+async function sendEmail(to: string, subject: string, html: string): Promise<void> {
+  const apiKey = import.meta.env.VITE_RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[emailService] VITE_RESEND_API_KEY manquante — email non envoyé');
+    return;
+  }
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ from: FROM, to, subject, html }),
+    });
+  } catch (err) {
+    console.error('[emailService] Erreur envoi email:', err);
+  }
+}
 
 // ── HTML wrapper commun ──────────────────────────────────────────────────────
 
@@ -49,8 +67,6 @@ function wrapHtml(content: string): string {
 </body>
 </html>`;
 }
-
-// ── Sections réutilisables ───────────────────────────────────────────────────
 
 function separator(): string {
   return `<tr><td style="padding:0 32px;"><hr style="border:none;border-top:1px solid #e8e8e0;margin:0;" /></td></tr>`;
@@ -135,19 +151,16 @@ export async function sendOrderConfirmation(data: OrderEmailData): Promise<void>
     </td></tr>
   `);
 
-  await resend.emails.send({
-    from: FROM,
-    to: data.email,
-    subject: `Confirmation de commande ${orderRef} — Edition Made`,
-    html,
-  });
+  await sendEmail(data.email, `Confirmation de commande ${orderRef} — Edition Made`, html);
 }
 
 // ── 2. Notification admin (nouvelle commande) ────────────────────────────────
 
 export async function sendOrderNotificationToAdmin(data: OrderEmailData): Promise<void> {
   const orderRef = data.orderNumber || `EM-${Date.now().toString(36).toUpperCase()}`;
-  const itemsText = data.items.map(i => `• ${i.name} × ${i.quantity} — ${(i.price * i.quantity).toFixed(2)} €`).join('<br/>');
+  const itemsText = data.items
+    .map(i => `• ${i.name} × ${i.quantity} — ${(i.price * i.quantity).toFixed(2)} €`)
+    .join('<br/>');
 
   const html = wrapHtml(`
     <tr><td style="padding:32px 32px 16px;">
@@ -180,12 +193,7 @@ export async function sendOrderNotificationToAdmin(data: OrderEmailData): Promis
     </td></tr>
   `);
 
-  await resend.emails.send({
-    from: FROM,
-    to: ADMIN_EMAIL,
-    subject: `[Commande] ${data.firstName} ${data.lastName} — ${data.total.toFixed(2)} €`,
-    html,
-  });
+  await sendEmail(ADMIN_EMAIL, `[Commande] ${data.firstName} ${data.lastName} — ${data.total.toFixed(2)} €`, html);
 }
 
 // ── 3. Confirmation contact (client) ────────────────────────────────────────
@@ -224,12 +232,7 @@ export async function sendContactConfirmation(data: ContactEmailData): Promise<v
     </td></tr>
   `);
 
-  await resend.emails.send({
-    from: FROM,
-    to: data.email,
-    subject: 'Votre message a bien été reçu — Edition Made',
-    html,
-  });
+  await sendEmail(data.email, 'Votre message a bien été reçu — Edition Made', html);
 }
 
 // ── 4. Notification admin (nouveau contact) ──────────────────────────────────
@@ -262,10 +265,5 @@ export async function sendContactNotificationToAdmin(data: ContactEmailData): Pr
     </td></tr>
   `);
 
-  await resend.emails.send({
-    from: FROM,
-    to: ADMIN_EMAIL,
-    subject: `[Contact] ${data.name}${data.subject ? ` — ${data.subject}` : ''}`,
-    html,
-  });
+  await sendEmail(ADMIN_EMAIL, `[Contact] ${data.name}${data.subject ? ` — ${data.subject}` : ''}`, html);
 }
