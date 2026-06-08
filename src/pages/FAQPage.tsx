@@ -32,7 +32,7 @@ const faqs = [
   },
   {
     q: 'Puis-je visiter le showroom avant d\'acheter ?',
-    a: 'Absolument ! Notre showroom de 500m² à Saint-Maurice est ouvert du lundi au samedi de 10h à 19h et le dimanche de 10h à 17h. Vous pouvez y voir et tester tous nos produits exposés, et certains articles peuvent être emportés directement.',
+    a: 'Absolument ! Notre showroom de 500m² à Saint-Maurice est ouvert du lundi au samedi de 10h à 18h30 et le dimanche de 14h à 18h30. Vous pouvez y voir et tester tous nos produits exposés, et certains articles peuvent être emportés directement.',
   },
   {
     q: 'Proposez-vous des conseils d\'aménagement ?',
@@ -40,7 +40,7 @@ const faqs = [
   },
   {
     q: 'Comment contacter le service client ?',
-    a: 'Vous pouvez nous contacter par téléphone au 06 60 22 25 25 (du lundi au samedi de 10h à 19h), par WhatsApp, par email à contact@editionmade.com, ou directement en vous rendant dans notre showroom.',
+    a: 'Vous pouvez nous contacter par téléphone au 06 60 22 25 25 (du lundi au samedi de 10h à 18h30), par WhatsApp, par email à contact@editionmade.com, ou directement en vous rendant dans notre showroom.',
   },
 ];
 
