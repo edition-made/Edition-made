@@ -13,8 +13,8 @@ export default function PromoSection() {
     supabase
       .from('products')
       .select('*')
-      .eq('in_stock', true)
       .gte('discount', 40)
+      .order('in_stock', { ascending: false })
       .order('discount', { ascending: false })
       .limit(8)
       .then(({ data }) => {

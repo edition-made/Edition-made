@@ -13,12 +13,16 @@ export default function ArrivagePage() {
   useEffect(() => {
     const fetchData = async () => {
       const fetchWithFallback = async (eq_field: string, eq_val: boolean, lim?: number) => {
-        let q = supabase.from('products').select('*').eq(eq_field, eq_val).eq('in_stock', true);
+        let q = supabase.from('products').select('*').eq(eq_field, eq_val);
         if (lim) q = q.limit(lim);
-        let { data, error } = await q.order('sort_order', { ascending: true, nullsFirst: false });
+        let { data, error } = await q
+          .order('in_stock', { ascending: false })
+          .order('sort_order', { ascending: true, nullsFirst: false });
         if (error) {
-          const qf = supabase.from('products').select('*').eq(eq_field, eq_val).eq('in_stock', true);
-          ({ data } = await (lim ? qf.limit(lim) : qf).order('created_at', { ascending: false }));
+          const qf = supabase.from('products').select('*').eq(eq_field, eq_val);
+          ({ data } = await (lim ? qf.limit(lim) : qf)
+            .order('in_stock', { ascending: false })
+            .order('created_at', { ascending: false }));
         }
         return data || [];
       };
@@ -55,11 +59,11 @@ export default function ArrivagePage() {
       <div className="max-w-screen-xl mx-auto px-4 py-10">
         <div className="bg-[#fff500] p-4 mb-8 flex flex-wrap items-center gap-2 text-sm font-bold">
           <Sparkles size={16} />
-          <span>Ces articles viennent d'arriver en stock</span>
+          <span>Ces articles viennent d'arriver — disponibilité indiquée sur chaque fiche</span>
           <span className="text-black/50">·</span>
           <span>Quantités limitées</span>
           <span className="text-black/50">·</span>
-          <span>Premier arrivé, premier servi</span>
+          <span>Les produits épuisés restent consultables</span>
         </div>
 
         {loading ? (

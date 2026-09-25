@@ -11,6 +11,7 @@ interface Product {
   images: string[];
   category: string;
   in_stock: boolean;
+  stock_count: number;
 }
 
 export default function SearchPage() {
@@ -26,9 +27,9 @@ export default function SearchPage() {
       setLoading(true);
       const { data } = await supabase
         .from('products')
-        .select('id, name, slug, price, images, category, in_stock')
+        .select('id, name, slug, price, images, category, in_stock, stock_count')
         .or(`name.ilike.%${query}%,category.ilike.%${query}%,description.ilike.%${query}%`)
-        .eq('in_stock', true)
+        .order('in_stock', { ascending: false })
         .limit(24);
       setResults(data || []);
       setLoading(false);
@@ -88,13 +89,16 @@ export default function SearchPage() {
                   to={`/produit/${product.slug}`}
                   className="group border border-gray-100 hover:border-black transition-colors overflow-hidden"
                 >
-                  <div className="aspect-square bg-gray-100 overflow-hidden">
+                  <div className="relative aspect-square bg-gray-100 overflow-hidden">
                     {product.images?.[0] && (
                       <img
                         src={product.images[0]}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
+                    )}
+                    {(!product.in_stock || product.stock_count === 0) && (
+                      <span className="absolute left-2 top-2 bg-red-600 px-2 py-1 text-[10px] font-black uppercase text-white">Épuisé</span>
                     )}
                   </div>
                   <div className="p-3">

@@ -11,18 +11,18 @@ export default function NewArrivals() {
 
   useEffect(() => {
     const fetchArrivals = async () => {
-      const filters = { is_weekly_arrival: true, in_stock: true };
+      const filters = { is_weekly_arrival: true };
       let { data, error } = await supabase
         .from('products').select('*')
         .eq('is_weekly_arrival', filters.is_weekly_arrival)
-        .eq('in_stock', filters.in_stock)
+        .order('in_stock', { ascending: false })
         .order('sort_order', { ascending: true, nullsFirst: false })
         .limit(8);
       if (error) {
         ({ data } = await supabase
           .from('products').select('*')
           .eq('is_weekly_arrival', filters.is_weekly_arrival)
-          .eq('in_stock', filters.in_stock)
+          .order('in_stock', { ascending: false })
           .order('created_at', { ascending: false })
           .limit(8));
       }

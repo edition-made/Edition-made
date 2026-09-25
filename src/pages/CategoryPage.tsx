@@ -34,15 +34,17 @@ export default function CategoryPage() {
     setLoading(true);
     const fetchCategoryProducts = async () => {
       const applyFilters = (q: any) => {
-        q = q.eq('category', slug).eq('in_stock', true);
+        q = q.eq('category', slug);
         if (sub) q = q.eq('subcategory', sub);
         return q;
       };
 
       let { data, error } = await applyFilters(supabase.from('products').select('*'))
+        .order('in_stock', { ascending: false })
         .order('sort_order', { ascending: true, nullsFirst: false });
       if (error) {
         ({ data } = await applyFilters(supabase.from('products').select('*'))
+          .order('in_stock', { ascending: false })
           .order('created_at', { ascending: false }));
       }
 

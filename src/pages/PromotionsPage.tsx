@@ -13,8 +13,8 @@ export default function PromotionsPage() {
     supabase
       .from('products')
       .select('*')
-      .eq('in_stock', true)
       .gte('discount', 1)
+      .order('in_stock', { ascending: false })
       .order('discount', { ascending: false })
       .then(({ data }) => {
         if (data && data.length > 0) {
@@ -62,7 +62,7 @@ export default function PromotionsPage() {
       <div className="bg-[#fff500] py-3">
         <div className="max-w-screen-xl mx-auto px-4 flex flex-wrap items-center gap-4 text-sm font-bold">
           <Tag size={16} className="text-black" />
-          <span>Tous ces produits sont en stock et disponibles</span>
+          <span>Disponibilité indiquée sur chaque produit</span>
           <span className="text-black/50">·</span>
           <span>Livraison France entière</span>
           <span className="text-black/50">·</span>
@@ -88,7 +88,7 @@ export default function PromotionsPage() {
         <div className="mt-14 bg-gray-50 p-8">
           <h2 className="font-display font-bold text-xl mb-3">Déstockage mobilier haut de gamme — Edition Made</h2>
           <p className="text-sm text-gray-600 leading-relaxed max-w-3xl">
-            Chez Edition Made, le déstockage est notre métier. Nous sélectionnons les meilleures pièces de mobilier et décoration haut de gamme pour vous les proposer à des prix d'usine exceptionnels. Canapés design, tables en bois massif, fauteuils premium, literie de qualité — tout est disponible avec des remises allant jusqu'à -60%.
+            Chez Edition Made, le déstockage est notre métier. Nous sélectionnons les meilleures pièces de mobilier et décoration haut de gamme pour vous les proposer à des prix d'usine exceptionnels. Canapés design, tables en bois massif, fauteuils premium, literie de qualité — retrouvez des remises allant jusqu'à -60%, avec la disponibilité indiquée sur chaque produit.
           </p>
           <p className="text-sm text-gray-600 leading-relaxed max-w-3xl mt-3">
             Notre showroom de 500m² à Saint-Maurice (Val-de-Marne) vous accueille 7j/7 pour voir et tester chaque produit. Livraison France entière ou retrait gratuit en magasin. Paiement en plusieurs fois avec Alma.

@@ -252,14 +252,22 @@ export default function ProductPage() {
 
             <p className="text-sm text-gray-600 leading-relaxed mb-5">{product.shortDescription}</p>
 
+            {isSoldOut && (
+              <div className="mb-5 border-2 border-red-600 bg-red-50 px-4 py-3" role="status">
+                <p className="font-black uppercase text-red-700">Produit épuisé</p>
+                <p className="mt-1 text-xs text-red-700">Vous pouvez consulter cette fiche, mais ce produit ne peut plus être commandé.</p>
+              </div>
+            )}
+
             {product.colors && product.colors.length > 0 && (
-              <div className="mb-5">
+              <div className={`mb-5 ${isSoldOut ? 'opacity-50' : ''}`}>
                 <p className="font-bold text-sm mb-2">Couleur : <span className="font-normal text-gray-600">{selectedColor}</span></p>
                 <div className="flex flex-wrap gap-2">
                   {product.colors.map(color => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
+                      disabled={isSoldOut}
                       className={`px-3 py-1.5 text-xs font-semibold border-2 transition-colors ${selectedColor === color ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'}`}
                     >
                       {color}
@@ -269,18 +277,20 @@ export default function ProductPage() {
               </div>
             )}
 
-            <div className="mb-5">
+            <div className={`mb-5 ${isSoldOut ? 'opacity-50' : ''}`}>
               <p className="font-bold text-sm mb-2">Mode de réception</p>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setDeliveryMode('delivery')}
-                  className={`flex items-center gap-2 p-3 border-2 text-sm font-semibold transition-colors ${deliveryMode === 'delivery' ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'}`}
+                  disabled={isSoldOut}
+                  className={`flex items-center gap-2 p-3 border-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${deliveryMode === 'delivery' ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'}`}
                 >
                   <Truck size={16} /> Livraison à domicile
                 </button>
                 <button
                   onClick={() => setDeliveryMode('pickup')}
-                  className={`flex items-center gap-2 p-3 border-2 text-sm font-semibold transition-colors ${deliveryMode === 'pickup' ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'}`}
+                  disabled={isSoldOut}
+                  className={`flex items-center gap-2 p-3 border-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${deliveryMode === 'pickup' ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'}`}
                 >
                   <Store size={16} /> Retrait en magasin
                 </button>
@@ -288,10 +298,10 @@ export default function ProductPage() {
             </div>
 
             <div className="flex gap-2 mb-5">
-              <div className="flex items-center border border-gray-300">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-lg font-bold">−</button>
+              <div className={`flex items-center border border-gray-300 ${isSoldOut ? 'bg-gray-100 opacity-50' : ''}`}>
+                <button disabled={isSoldOut} onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-lg font-bold disabled:cursor-not-allowed">−</button>
                 <span className="w-12 text-center font-bold">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-lg font-bold">+</button>
+                <button disabled={isSoldOut} onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 flex items-center justify-center hover:bg-gray-100 text-lg font-bold disabled:cursor-not-allowed">+</button>
               </div>
               <button
                 onClick={handleAddToCart}
@@ -314,13 +324,15 @@ export default function ProductPage() {
               </div>
             )}
 
-            <div className="bg-[#fff500]/15 border border-[#fff500] p-4 mb-5">
+            <div className={`p-4 mb-5 border ${isSoldOut ? 'border-gray-300 bg-gray-100 opacity-60' : 'bg-[#fff500]/15 border-[#fff500]'}`}>
               <div className="flex items-center gap-2 mb-1">
                 <CreditCard size={16} />
-                <span className="font-bold text-sm">Paiement en plusieurs fois avec Alma</span>
+                <span className="font-bold text-sm">{isSoldOut ? 'Paiement indisponible' : 'Paiement en plusieurs fois avec Alma'}</span>
               </div>
               <p className="text-xs text-gray-600">
-                Payez en 3x ({Math.ceil(product.price / 3)} €/mois) ou 4x ({Math.ceil(product.price / 4)} €/mois) sans frais
+                {isSoldOut
+                  ? 'Ce produit est épuisé et ne peut pas être commandé.'
+                  : `Payez en 3x (${Math.ceil(product.price / 3)} €/mois) ou 4x (${Math.ceil(product.price / 4)} €/mois) sans frais`}
               </p>
             </div>
 
