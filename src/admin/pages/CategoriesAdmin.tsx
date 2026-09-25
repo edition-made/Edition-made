@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Upload, Loader2, CheckCircle2, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { Upload, Loader2, CheckCircle2, Image as ImageIcon, RefreshCw, AlertCircle, ExternalLink } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { uploadImage } from '../../lib/imageUtils';
+import { deleteImage, uploadImage } from '../../lib/imageUtils';
 import { categories } from '../../data/categories';
 import { Category } from '../../types';
 
@@ -17,25 +17,43 @@ const CategoryImageCard = ({ category, imageUrl, onSave }: CardProps) => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [justSaved, setJustSaved] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const processFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) return;
+    setErrorMessage('');
+    if (!file.type.startsWith('image/')) {
+      setErrorMessage('Choisissez un fichier image.');
+      return;
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      setErrorMessage('L’image ne doit pas dépasser 12 Mo.');
+      return;
+    }
+
     setUploading(true);
     try {
       const url = await uploadImage(file, 'category-images', `categorie-${category.slug}`);
-      await supabase.from('category_images').upsert(
+      const { error } = await supabase.from('category_images').upsert(
         { category_id: category.id, category_name: category.name, image_url: url, updated_at: new Date().toISOString() },
         { onConflict: 'category_id' }
       );
+      if (error) {
+        await deleteImage(url, 'category-images');
+        throw error;
+      }
+
       onSave(category.id, url);
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 2500);
+      if (imageUrl) void deleteImage(imageUrl, 'category-images');
     } catch (err) {
       console.error('Upload catégorie:', err);
+      setErrorMessage('Envoi impossible. Vérifiez la configuration Supabase puis réessayez.');
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
-  }, [category, onSave]);
+  }, [category, imageUrl, onSave]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -54,11 +72,11 @@ const CategoryImageCard = ({ category, imageUrl, onSave }: CardProps) => {
   const hasCustomImage = !!imageUrl;
 
   return (
-    <div className="bg-black/40 border border-white/10 overflow-hidden group/card">
+    <div className={`bg-black/40 border overflow-hidden group/card transition-colors ${errorMessage ? 'border-red-500/50' : 'border-white/10 hover:border-white/25'}`}>
 
       {/* Zone image + drag-drop */}
       <div
-        className={`relative aspect-[4/3] overflow-hidden cursor-pointer ${dragOver ? 'ring-2 ring-[#fff500]' : ''}`}
+        className={`relative aspect-[4/3] overflow-hidden cursor-pointer ${dragOver ? 'ring-2 ring-inset ring-[#fff500]' : ''}`}
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
@@ -76,12 +94,11 @@ const CategoryImageCard = ({ category, imageUrl, onSave }: CardProps) => {
           </div>
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
 
         {/* Hover overlay */}
         <div className={`absolute inset-0 flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
-          dragOver ? 'bg-[#fff500]/20' : 'bg-black/50 opacity-0 group-hover/card:opacity-100'
+          dragOver ? 'bg-[#fff500]/20' : 'bg-black/55 opacity-0 group-hover/card:opacity-100'
         }`}>
           {uploading ? (
             <>
@@ -96,8 +113,8 @@ const CategoryImageCard = ({ category, imageUrl, onSave }: CardProps) => {
           ) : (
             <>
               <RefreshCw size={20} className="text-white" />
-              <p className="text-white text-xs font-semibold">Glisser ou cliquer</p>
-              <p className="text-gray-400 text-[10px]">Auto WebP · Nom SEO</p>
+              <p className="text-white text-xs font-semibold">Déposez votre photo ici</p>
+              <p className="text-gray-300 text-[10px]">ou cliquez pour parcourir</p>
             </>
           )}
         </div>
@@ -119,22 +136,24 @@ const CategoryImageCard = ({ category, imageUrl, onSave }: CardProps) => {
       </div>
 
       {/* Infos catégorie */}
-      <div className="px-3 py-2.5 flex items-center justify-between">
-        <div className="min-w-0">
-          <p className="text-white text-xs font-bold truncate">{category.name}</p>
-          <p className="text-gray-600 text-[10px] font-mono">{category.slug}</p>
-        </div>
+      <div className="p-3">
+        <p className="text-white text-sm font-bold truncate mb-2">{category.name}</p>
         <button
+          type="button"
           onClick={() => !uploading && inputRef.current?.click()}
           disabled={uploading}
-          title="Changer la photo"
-          className="ml-2 p-1.5 text-gray-500 hover:text-[#fff500] hover:bg-white/10 transition-colors disabled:opacity-40 flex-shrink-0"
+          className="w-full min-h-10 flex items-center justify-center gap-2 border border-white/15 bg-white/5 text-gray-200 hover:border-[#fff500] hover:text-[#fff500] transition-colors disabled:opacity-40 text-xs font-bold"
         >
           {uploading
-            ? <Loader2 size={13} className="animate-spin text-[#fff500]" />
-            : <Upload size={13} />
+            ? <><Loader2 size={14} className="animate-spin text-[#fff500]" /> Envoi en cours…</>
+            : <><Upload size={14} /> {hasCustomImage ? 'Remplacer la photo' : 'Ajouter une photo'}</>
           }
         </button>
+        {errorMessage && (
+          <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-snug text-red-400" role="alert">
+            <AlertCircle size={13} className="mt-0.5 flex-shrink-0" /> {errorMessage}
+          </p>
+        )}
       </div>
 
       <input
@@ -153,14 +172,16 @@ const CategoryImageCard = ({ category, imageUrl, onSave }: CardProps) => {
 export default function CategoriesAdmin() {
   const [images, setImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    supabase.from('category_images').select('category_id, image_url').then(({ data }) => {
+    supabase.from('category_images').select('category_id, image_url').then(({ data, error }) => {
       if (data) {
         const map: Record<string, string> = {};
         data.forEach(row => { if (row.image_url) map[row.category_id] = row.image_url; });
         setImages(map);
       }
+      setLoadError(!!error);
       setLoading(false);
     });
   }, []);
@@ -176,11 +197,11 @@ export default function CategoriesAdmin() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display font-bold text-2xl text-white">Photos des catégories</h1>
+          <h1 className="font-display font-bold text-2xl text-white">Images de « Nos univers »</h1>
           <p className="text-gray-500 text-sm mt-1">
             {customCount > 0
               ? `${customCount} / ${categories.length} catégorie${customCount > 1 ? 's' : ''} avec photo personnalisée`
-              : 'Glissez-déposez une photo sur chaque catégorie pour la personnaliser'
+              : 'Glissez une image sur une catégorie ou cliquez sur son bouton'
             }
           </p>
         </div>
@@ -191,11 +212,19 @@ export default function CategoriesAdmin() {
         )}
       </div>
 
-      {/* Info bucket */}
-      <div className="bg-white/5 border border-white/10 px-4 py-3 mb-6 text-xs text-gray-400 leading-relaxed">
-        <strong className="text-white">Bucket Supabase requis :</strong> Crée un bucket public nommé <code className="bg-white/10 px-1 text-[#fff500]">category-images</code> dans Storage → New bucket → <em>Public bucket</em> activé.
-        Les images sont converties en <strong className="text-white">WebP</strong> et renommées automatiquement (<code className="bg-white/10 px-1">categorie-[slug]-[nom]-[timestamp].webp</code>).
+      <div className="flex flex-col gap-3 bg-white/5 border border-white/10 px-4 py-3 mb-6 text-xs text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+        <p><strong className="text-white">Conseil :</strong> utilisez une photo horizontale, idéalement en 1200 × 900 px. Elle sera optimisée automatiquement.</p>
+        <a href="/" target="_blank" rel="noreferrer" className="inline-flex flex-shrink-0 items-center gap-1.5 font-bold text-[#fff500] hover:underline">
+          Voir « Nos univers » <ExternalLink size={13} />
+        </a>
       </div>
+
+      {loadError && (
+        <div className="mb-6 flex items-start gap-2 border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+          <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+          <p>Le stockage des images de catégories n’est pas encore configuré. Appliquez les migrations Supabase puis rechargez cette page.</p>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center h-48">

@@ -10,13 +10,44 @@ export default function OrderSuccessPage() {
 
   const orderNumber = searchParams.get('order_number');
   const redirectStatus = searchParams.get('redirect_status');
+  const paymentProvider = searchParams.get('payment_provider');
+  const almaPaymentId = searchParams.get('pid');
 
   const [order, setOrder] = useState<DbOrder | null>(null);
   const [items, setItems] = useState<DbOrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [cartCleared, setCartCleared] = useState(false);
+  const [almaValidation, setAlmaValidation] = useState<'idle' | 'checking' | 'success' | 'failed'>(
+    paymentProvider === 'alma' ? 'checking' : 'idle'
+  );
 
-  const isSuccess = redirectStatus === 'succeeded' || redirectStatus === null;
+  const isSuccess = paymentProvider === 'alma'
+    ? almaValidation === 'success'
+    : redirectStatus === 'succeeded' || redirectStatus === null;
+
+  useEffect(() => {
+    if (paymentProvider !== 'alma' || redirectStatus === 'failed') return;
+    if (!almaPaymentId) {
+      setAlmaValidation('failed');
+      return;
+    }
+
+    const verifyPayment = async () => {
+      try {
+        const response = await fetch(`/api/alma-payment-status?pid=${encodeURIComponent(almaPaymentId)}`, {
+          headers: { Accept: 'application/json' },
+        });
+        const rawBody = await response.text();
+        if (!rawBody.trim()) throw new Error('Réponse Alma vide');
+        const data = JSON.parse(rawBody) as { paid?: boolean };
+        setAlmaValidation(response.ok && data.paid ? 'success' : 'failed');
+      } catch {
+        setAlmaValidation('failed');
+      }
+    };
+
+    verifyPayment();
+  }, [paymentProvider, almaPaymentId, redirectStatus]);
 
   useEffect(() => {
     if (!cartCleared && isSuccess) {
@@ -26,7 +57,10 @@ export default function OrderSuccessPage() {
   }, [isSuccess, clearCart, cartCleared]);
 
   useEffect(() => {
-    if (!orderNumber) { setLoading(false); return; }
+    if (!orderNumber || !isSuccess) {
+      if (paymentProvider !== 'alma' || almaValidation !== 'checking') setLoading(false);
+      return;
+    }
 
     const fetchOrder = async () => {
       const { data: orderData } = await supabase
@@ -47,10 +81,10 @@ export default function OrderSuccessPage() {
     };
 
     fetchOrder();
-  }, [orderNumber]);
+  }, [orderNumber, isSuccess, paymentProvider, almaValidation]);
 
   // ── Paiement échoué ────────────────────────────────────────────────────────
-  if (redirectStatus === 'failed' || redirectStatus === 'canceled') {
+  if (redirectStatus === 'failed' || redirectStatus === 'canceled' || almaValidation === 'failed') {
     return (
       <div className="max-w-screen-xl mx-auto px-4 py-24 text-center">
         <div className="w-20 h-20 bg-red-100 mx-auto flex items-center justify-center mb-6">
@@ -61,7 +95,9 @@ export default function OrderSuccessPage() {
         <p className="text-sm text-gray-500 mb-8">
           {redirectStatus === 'canceled'
             ? "Vous avez annulé le paiement."
-            : "Votre carte a été refusée. Vérifiez vos informations et réessayez."}
+            : paymentProvider === 'alma'
+              ? "Le paiement Alma n’a pas pu être confirmé. Votre panier a été conservé."
+              : "Votre carte a été refusée. Vérifiez vos informations et réessayez."}
         </p>
         <div className="flex flex-wrap justify-center gap-3">
           <Link to="/checkout" className="btn-primary">Réessayer</Link>
@@ -72,7 +108,7 @@ export default function OrderSuccessPage() {
   }
 
   // ── Chargement ─────────────────────────────────────────────────────────────
-  if (loading) {
+  if (loading || almaValidation === 'checking') {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader size={28} className="animate-spin text-gray-400" />
@@ -130,7 +166,14 @@ export default function OrderSuccessPage() {
                   ))}
                 </div>
                 <div className="border-t border-gray-100 mt-4 pt-4 flex justify-between font-black text-base">
-                  <span>Total payé</span>
+                  <div>
+                    {Number(order.delivery_cost) > 0 && (
+                      <p className="text-xs text-gray-500 font-normal mb-1">
+                        Dont livraison : {Number(order.delivery_cost).toFixed(2)} €
+                      </p>
+                    )}
+                    <span>Total payé</span>
+                  </div>
                   <span>{parseFloat(String(order.total)).toFixed(2)} €</span>
                 </div>
               </div>

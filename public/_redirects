@@ -1,2 +1,5 @@
+/llm.txt  /llms.txt  301
+/llms-full.txt  /.netlify/functions/llms-full  200!
+/sitemap.xml  /.netlify/functions/sitemap  200!
 /api/*  /.netlify/functions/:splat  200
 /*      /index.html                 200

@@ -43,7 +43,7 @@ export default function StockAdmin() {
   const filtered = products
     .filter(p => {
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase());
-      if (filterStock === 'out') return matchSearch && !p.in_stock;
+      if (filterStock === 'out') return matchSearch && (!p.in_stock || (p.stock_count ?? 0) === 0);
       if (filterStock === 'low') return matchSearch && p.in_stock && (p.stock_count ?? 0) <= 3;
       return matchSearch;
     })
@@ -57,8 +57,8 @@ export default function StockAdmin() {
       return 0;
     });
 
-  const outCount = products.filter(p => !p.in_stock).length;
-  const lowCount = products.filter(p => p.in_stock && (p.stock_count ?? 0) <= 3).length;
+  const outCount = products.filter(p => !p.in_stock || (p.stock_count ?? 0) === 0).length;
+  const lowCount = products.filter(p => p.in_stock && (p.stock_count ?? 0) > 0 && (p.stock_count ?? 0) <= 3).length;
 
   const SortIcon = ({ col }: { col: typeof sortBy }) =>
     sortBy === col
@@ -76,7 +76,7 @@ export default function StockAdmin() {
           {outCount > 0 && (
             <div className="bg-red-900/30 border border-red-500/30 px-3 py-2 text-center">
               <p className="text-red-300 font-black text-lg leading-none">{outCount}</p>
-              <p className="text-red-400 text-[10px]">rupture</p>
+              <p className="text-red-400 text-[10px]">épuisé</p>
             </div>
           )}
           {lowCount > 0 && (
@@ -92,7 +92,7 @@ export default function StockAdmin() {
         <div className="flex items-start gap-2 bg-[#fff500]/10 border border-[#fff500]/30 p-3 mb-5">
           <AlertTriangle size={14} className="text-[#fff500] flex-shrink-0 mt-0.5" />
           <p className="text-xs text-gray-300">
-            {outCount > 0 && <><strong className="text-white">{outCount} produit{outCount > 1 ? 's' : ''}</strong> en rupture de stock. </>}
+            {outCount > 0 && <><strong className="text-white">{outCount} produit{outCount > 1 ? 's' : ''}</strong> épuisé{outCount > 1 ? 's' : ''}. </>}
             {lowCount > 0 && <><strong className="text-white">{lowCount} produit{lowCount > 1 ? 's' : ''}</strong> avec un stock faible (≤ 3 unités).</>}
           </p>
         </div>
@@ -108,7 +108,7 @@ export default function StockAdmin() {
           {(['all', 'low', 'out'] as const).map(f => (
             <button key={f} onClick={() => setFilterStock(f)}
               className={`px-3 py-2 text-xs font-bold transition-colors ${filterStock === f ? 'bg-[#fff500] text-black' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
-              {f === 'all' ? 'Tous' : f === 'low' ? 'Stock faible' : 'Rupture'}
+              {f === 'all' ? 'Tous' : f === 'low' ? 'Stock faible' : 'Épuisés'}
             </button>
           ))}
         </div>
@@ -184,7 +184,7 @@ export default function StockAdmin() {
                         isLow ? 'bg-[#fff500]/20 text-[#fff500] border-[#fff500]/30' :
                         'bg-green-500/20 text-green-300 border-green-500/30'
                       }`}>
-                        {isOut ? 'Rupture' : isLow ? 'Faible' : 'En stock'}
+                        {isOut ? 'Épuisé' : isLow ? 'Faible' : 'En stock'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right text-white font-semibold">

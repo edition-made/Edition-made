@@ -22,6 +22,8 @@ import DeliveryPolicyPage from './pages/DeliveryPolicyPage';
 import ReturnPolicyPage from './pages/ReturnPolicyPage';
 import MentionsLegalesPage from './pages/MentionsLegalesPage';
 import WhatsAppButton from './components/ui/WhatsAppButton';
+import SiteAnalytics from './components/analytics/SiteAnalytics';
+import WebMCPTools from './components/analytics/WebMCPTools';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -39,6 +41,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <CartProvider>
+        <SiteAnalytics />
+        <WebMCPTools />
         <Routes>
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/" element={<Layout><HomePage /></Layout>} />

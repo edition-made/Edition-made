@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingCart, Menu, X, ChevronDown, Phone, MapPin, MessageSquare,
@@ -6,8 +6,18 @@ import {
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import CartDrawer from './CartDrawer';
+import { useSubcategories } from '../../hooks/useSubcategories';
 
-const navLinks = [
+type NavLink = {
+  label: string;
+  href: string;
+  icon: ReactNode;
+  highlight?: boolean;
+  badge?: string;
+  submenu?: Array<{ label: string; href: string }>;
+};
+
+const baseNavLinks: NavLink[] = [
   {
     label: 'Accueil',
     href: '/',
@@ -29,10 +39,6 @@ const navLinks = [
     label: 'Canapés',
     href: '/categorie/canapes',
     icon: <Sofa size={18} />,
-    submenu: [
-      { label: 'Canapés fixes', href: '/categorie/canapes/canapes-fixes' },
-      { label: 'Convertibles', href: '/categorie/canapes/convertibles' },
-    ],
   },
   {
     label: 'Fauteuils & Poufs',
@@ -48,10 +54,6 @@ const navLinks = [
     label: 'Tables',
     href: '/categorie/tables',
     icon: <img src="/table_icone.png" alt="Tables" className="w-[18px] h-[18px] object-contain" />,
-    submenu: [
-      { label: 'Tables basses', href: '/categorie/tables/tables-basses' },
-      { label: 'Tables de repas', href: '/categorie/tables/tables-repas' },
-    ],
   },
   {
     label: 'Chaises',
@@ -67,11 +69,6 @@ const navLinks = [
     label: 'Literie',
     href: '/categorie/literie',
     icon: <Moon size={18} />,
-    submenu: [
-      { label: 'Matelas', href: '/categorie/literie/matelas' },
-      { label: 'Sommiers', href: '/categorie/literie/sommiers' },
-      { label: 'Linge de lit', href: '/categorie/literie/linge-de-lit' },
-    ],
   },
   {
     label: 'Jardin',
@@ -98,6 +95,19 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { subcategories } = useSubcategories();
+  const navLinks = useMemo(() => baseNavLinks.map(link => {
+    const categoryMatch = link.href.match(/^\/categorie\/([^/]+)$/);
+    if (!categoryMatch) return link;
+    const categorySlug = categoryMatch[1];
+    const submenu = subcategories
+      .filter(subcategory => subcategory.parentSlug === categorySlug)
+      .map(subcategory => ({
+        label: subcategory.name,
+        href: `/categorie/${categorySlug}/${subcategory.slug}`,
+      }));
+    return { ...link, submenu: submenu.length ? submenu : undefined };
+  }), [subcategories]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);

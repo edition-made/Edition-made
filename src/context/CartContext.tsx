@@ -21,6 +21,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const addItem = useCallback((product: Product, quantity = 1, color?: string) => {
+    if (!product.inStock || product.stockCount === 0 || quantity <= 0) return;
+
     setItems(prev => {
       const existing = prev.find(i => i.product.id === product.id && i.selectedColor === color);
       if (existing) {
@@ -45,7 +47,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return;
     }
     setItems(prev =>
-      prev.map(i => i.product.id === productId ? { ...i, quantity } : i)
+      prev.map(i => {
+        if (i.product.id !== productId) return i;
+        if (!i.product.inStock || i.product.stockCount === 0) return i;
+        const maxQuantity = i.product.stockCount ?? quantity;
+        return { ...i, quantity: Math.min(quantity, maxQuantity) };
+      })
     );
   }, [removeItem]);
 

@@ -17,10 +17,12 @@ const badgeConfig = {
 
 export default function ProductCard({ product, className = '' }: ProductCardProps) {
   const { addItem } = useCart();
+  const isSoldOut = !product.inStock || product.stockCount === 0;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isSoldOut) return;
     addItem(product);
   };
 
@@ -33,23 +35,28 @@ export default function ProductCard({ product, className = '' }: ProductCardProp
           className="w-full h-full object-cover"
           loading="lazy"
         />
-        {product.badge && (
+        {isSoldOut ? (
+          <div className="absolute top-2 left-2">
+            <span className="badge-last">Épuisé</span>
+          </div>
+        ) : product.badge ? (
           <div className="absolute top-2 left-2">
             <span className={badgeConfig[product.badge]?.class}>
               {badgeConfig[product.badge]?.label}
             </span>
           </div>
-        )}
+        ) : null}
         {product.discount && (
-          <div className="absolute top-2 right-2">
+          <div className="absolute bottom-2 right-2 md:bottom-auto md:top-2">
             <span className="price-discount">-{product.discount}%</span>
           </div>
         )}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors hidden md:flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={handleAddToCart}
-            className="bg-[#fff500] text-black p-2.5 hover:bg-[#e6dc00] transition-colors shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-200"
-            title="Ajouter au panier"
+            disabled={isSoldOut}
+            className={`p-2.5 text-black transition-colors shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-200 ${isSoldOut ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#fff500] hover:bg-[#e6dc00]'}`}
+            title={isSoldOut ? 'Produit épuisé' : 'Ajouter au panier'}
           >
             <ShoppingCart size={18} />
           </button>

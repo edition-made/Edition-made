@@ -67,8 +67,22 @@ export default function DeliveryPolicyPage() {
               <h2 className="font-display font-bold text-xl">Frais de livraison</h2>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed mb-4">
-              Les frais de livraison sont calculés en fonction du poids, des dimensions et de la destination de votre commande. Ils sont affichés clairement avant la validation de votre commande.
+              Les frais sont calculés automatiquement selon le montant des produits commandés et ajoutés avant le paiement.
             </p>
+            <div className="border border-gray-200 divide-y divide-gray-200 mb-4 text-sm">
+              {[
+                ['De 0 € à 49,99 €', '6,90 €'],
+                ['De 50 € à 299,99 €', '29 €'],
+                ['De 300 € à 999,99 €', '99 €'],
+                ['De 1 000 € à 1 999,99 €', '129 €'],
+                ['2 000 € et plus', 'Gratuite'],
+              ].map(([range, price]) => (
+                <div key={range} className="flex justify-between gap-4 px-4 py-3">
+                  <span className="text-gray-600">{range}</span>
+                  <strong>{price}</strong>
+                </div>
+              ))}
+            </div>
             <div className="bg-[#fff500]/10 border border-[#fff500]/30 p-4">
               <p className="font-black text-sm">Retrait en magasin : GRATUIT</p>
               <p className="text-sm text-gray-600 mt-1">14 avenue des Canadiens, 94410 Saint-Maurice — Lun–Sam 10h–18h30, Dim 14h–18h30</p>

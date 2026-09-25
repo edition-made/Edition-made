@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ShoppingCart, Truck, Store, CreditCard, Star, ChevronDown, ChevronUp, Shield, Check, X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -22,11 +22,14 @@ export default function ProductPage() {
   const [deliveryMode, setDeliveryMode] = useState<'delivery' | 'pickup'>('delivery');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const mobileGalleryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!slug) return;
     setLoading(true);
     setSelectedImage(0);
+    setDescExpanded(false);
+    mobileGalleryRef.current?.scrollTo({ left: 0 });
     const fetchProduct = async () => {
       const { data } = await supabase
         .from('products')
@@ -65,6 +68,19 @@ export default function ProductPage() {
     setLightboxOpen(true);
   };
 
+  const handleMobileGalleryScroll = () => {
+    const gallery = mobileGalleryRef.current;
+    if (!gallery || gallery.clientWidth === 0) return;
+    const index = Math.round(gallery.scrollLeft / gallery.clientWidth);
+    setSelectedImage(Math.min(Math.max(index, 0), (product?.images.length ?? 1) - 1));
+  };
+
+  const scrollToMobileImage = (index: number) => {
+    const gallery = mobileGalleryRef.current;
+    if (!gallery) return;
+    gallery.scrollTo({ left: gallery.clientWidth * index, behavior: 'smooth' });
+  };
+
   const closeLightbox = useCallback(() => setLightboxOpen(false), []);
 
   const lightboxPrev = useCallback(() => {
@@ -87,7 +103,7 @@ export default function ProductPage() {
   }, [lightboxOpen, closeLightbox, lightboxPrev, lightboxNext]);
 
   const handleAddToCart = () => {
-    if (!product) return;
+    if (!product || !product.inStock || product.stockCount === 0) return;
     addItem(product, quantity, selectedColor);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2500);
@@ -110,6 +126,8 @@ export default function ProductPage() {
     );
   }
 
+  const isSoldOut = !product.inStock || product.stockCount === 0;
+
   return (
     <div className="bg-white">
       <div className="max-w-screen-xl mx-auto px-4 py-6">
@@ -123,8 +141,51 @@ export default function ProductPage() {
 
         <div className="grid lg:grid-cols-2 gap-10 mb-16">
           <div>
+            <div className="relative mb-3 md:hidden">
+              <div
+                ref={mobileGalleryRef}
+                onScroll={handleMobileGalleryScroll}
+                className="flex aspect-square snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-gray-50 scrollbar-hide touch-pan-x"
+              >
+                {product.images.map((image, index) => (
+                  <button
+                    key={image}
+                    type="button"
+                    onClick={() => openLightbox(index)}
+                    className="h-full min-w-full snap-center snap-always"
+                    aria-label={`Agrandir la photo ${index + 1} sur ${product.images.length}`}
+                  >
+                    <img
+                      src={image}
+                      alt={`${product.name} — photo ${index + 1}`}
+                      className="h-full w-full object-contain"
+                    />
+                  </button>
+                ))}
+              </div>
+              {product.discount && (
+                <div className="absolute top-4 right-4 bg-black text-[#fff500] text-lg font-black px-3 py-1.5">
+                  -{product.discount}%
+                </div>
+              )}
+              {product.images.length > 1 && (
+                <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5" role="navigation" aria-label="Sélectionner une photo">
+                  {product.images.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => scrollToMobileImage(index)}
+                      className={`h-2.5 w-2.5 rounded-full border border-black/40 ${selectedImage === index ? 'bg-black' : 'bg-white/80'}`}
+                      aria-label={`Afficher la photo ${index + 1}`}
+                      aria-current={selectedImage === index ? 'true' : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div
-              className="aspect-square bg-gray-50 overflow-hidden relative mb-3 cursor-zoom-in group"
+              className="hidden aspect-square bg-gray-50 overflow-hidden relative mb-3 cursor-zoom-in group md:block"
               onClick={() => openLightbox(selectedImage)}
             >
               <img
@@ -142,7 +203,7 @@ export default function ProductPage() {
               </div>
             </div>
             {product.images.length > 1 && (
-              <div className="flex gap-2">
+              <div className="hidden gap-2 md:flex">
                 {product.images.map((img, i) => (
                   <button
                     key={i}
@@ -234,9 +295,14 @@ export default function ProductPage() {
               </div>
               <button
                 onClick={handleAddToCart}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 font-bold text-sm uppercase tracking-wide transition-all ${addedToCart ? 'bg-green-500 text-white' : 'bg-[#fff500] text-black hover:bg-[#e6dc00]'}`}
+                disabled={isSoldOut}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 font-bold text-sm uppercase tracking-wide transition-all disabled:cursor-not-allowed ${isSoldOut ? 'bg-gray-300 text-gray-600' : addedToCart ? 'bg-green-500 text-white' : 'bg-[#fff500] text-black hover:bg-[#e6dc00]'}`}
               >
-                {addedToCart ? <><Check size={18} /> Ajouté au panier</> : <><ShoppingCart size={18} /> Ajouter au panier</>}
+                {isSoldOut
+                  ? 'Épuisé'
+                  : addedToCart
+                    ? <><Check size={18} /> Ajouté au panier</>
+                    : <><ShoppingCart size={18} /> Ajouter au panier</>}
               </button>
             </div>
 
@@ -279,12 +345,18 @@ export default function ProductPage() {
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
               <h2 className="font-display font-bold text-xl mb-4">Description</h2>
-              <div className={`text-sm text-gray-600 leading-relaxed overflow-hidden transition-all ${descExpanded ? 'max-h-none' : 'max-h-24'}`}>
+              <div
+                id="product-description"
+                className={`text-sm text-gray-600 leading-relaxed ${descExpanded ? '' : 'max-h-24 overflow-hidden'}`}
+              >
                 <p>{product.description}</p>
               </div>
               <button
-                onClick={() => setDescExpanded(!descExpanded)}
-                className="flex items-center gap-1 text-sm font-bold mt-2 hover:text-gray-500 transition-colors"
+                type="button"
+                onClick={() => setDescExpanded(expanded => !expanded)}
+                aria-expanded={descExpanded}
+                aria-controls="product-description"
+                className="flex min-h-11 w-full md:w-auto items-center gap-1 text-sm font-bold mt-2 hover:text-gray-500 transition-colors touch-manipulation"
               >
                 {descExpanded ? <><ChevronUp size={14} /> Voir moins</> : <><ChevronDown size={14} /> Voir plus</>}
               </button>
@@ -312,8 +384,8 @@ export default function ProductPage() {
                   <tr>
                     <td className="py-2 font-semibold text-gray-500 pr-4">Disponibilité</td>
                     <td className="py-2">
-                      <span className={`font-bold ${product.inStock ? 'text-green-600' : 'text-red-600'}`}>
-                        {product.inStock ? 'En stock' : 'Épuisé'}
+                      <span className={`font-bold ${isSoldOut ? 'text-red-600' : 'text-green-600'}`}>
+                        {isSoldOut ? 'Épuisé' : 'En stock'}
                       </span>
                     </td>
                   </tr>

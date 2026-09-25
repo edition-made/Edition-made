@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Plus, Search, Pencil, Trash2, AlertCircle, Package,
@@ -7,6 +7,7 @@ import {
   GripVertical, Save, RotateCcw, Loader2,
 } from 'lucide-react';
 import { supabase, DbProduct } from '../../lib/supabase';
+import { useSubcategories } from '../../hooks/useSubcategories';
 
 type CatNode = {
   id: string;
@@ -15,7 +16,7 @@ type CatNode = {
   subs?: { id: string; label: string }[];
 };
 
-const CATEGORY_TREE: CatNode[] = [
+const BASE_CATEGORY_TREE: CatNode[] = [
   {
     id: 'canapes',
     label: 'Canapés',
@@ -88,6 +89,13 @@ export default function ProductsAdmin() {
   const [activeSub, setActiveSub] = useState<string>('');
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [deleting, setDeleting] = useState<string | null>(null);
+  const { subcategories } = useSubcategories();
+  const categoryTree = useMemo(() => BASE_CATEGORY_TREE.map(category => {
+    const subs = subcategories
+      .filter(subcategory => subcategory.parentSlug === category.id)
+      .map(subcategory => ({ id: subcategory.slug, label: subcategory.name }));
+    return { ...category, subs: subs.length ? subs : undefined };
+  }), [subcategories]);
 
   // Drag & drop state
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -214,9 +222,9 @@ export default function ProductsAdmin() {
     setExpanded(prev => ({ ...prev, [catId]: !prev[catId] }));
 
   const currentLabel = activeSub
-    ? CATEGORY_TREE.flatMap(c => c.subs || []).find(s => s.id === activeSub)?.label
+    ? categoryTree.flatMap(c => c.subs || []).find(s => s.id === activeSub)?.label
     : activeCat
-    ? CATEGORY_TREE.find(c => c.id === activeCat)?.label
+    ? categoryTree.find(c => c.id === activeCat)?.label
     : 'Tous les produits';
 
   const canReorder = !search;
@@ -244,7 +252,7 @@ export default function ProductsAdmin() {
         </button>
 
         <div className="px-2 space-y-0.5 pb-4">
-          {CATEGORY_TREE.map(cat => {
+          {categoryTree.map(cat => {
             const hasSubs = cat.subs && cat.subs.length > 0;
             const isCatActive = activeCat === cat.id && !activeSub;
             const isExpanded = expanded[cat.id];
@@ -390,8 +398,9 @@ export default function ProductsAdmin() {
               <tbody className="divide-y divide-white/5">
                 {products.map((product, idx) => {
                   const stock = product.stock_count ?? 0;
-                  const isLow = product.in_stock && stock <= 3;
-                  const catNode = CATEGORY_TREE.find(c => c.id === product.category);
+                  const isOut = !product.in_stock || stock === 0;
+                  const isLow = !isOut && stock <= 3;
+                  const catNode = categoryTree.find(c => c.id === product.category);
                   const subLabel = catNode?.subs?.find(s => s.id === product.subcategory)?.label;
                   const isDragging = dragIdx === idx;
                   const isDragOver = dragOverIdx === idx && dragIdx !== idx;
@@ -455,17 +464,21 @@ export default function ProductsAdmin() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           {isLow && <AlertCircle size={11} className="text-[#fff500]" />}
-                          <span className={`text-xs font-semibold ${product.in_stock ? (isLow ? 'text-[#fff500]' : 'text-green-400') : 'text-red-400'}`}>
-                            {product.in_stock ? `${stock}` : '0'}
+                          <span className={`text-xs font-semibold ${isOut ? 'text-red-400' : isLow ? 'text-[#fff500]' : 'text-green-400'}`}>
+                            {stock}
                           </span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {product.badge && (
+                        {isOut ? (
+                          <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 uppercase">
+                            Épuisé
+                          </span>
+                        ) : product.badge ? (
                           <span className={`text-[10px] font-black px-2 py-0.5 uppercase ${badgeColors[product.badge] || 'bg-gray-700 text-white'}`}>
                             {product.badge}
                           </span>
-                        )}
+                        ) : null}
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

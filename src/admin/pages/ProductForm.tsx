@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import ImageUpload from '../components/ImageUpload';
 import { toSeoSlug } from '../../lib/imageUtils';
+import { useSubcategories } from '../../hooks/useSubcategories';
 
 const CATEGORIES = [
   { value: 'canapes', label: 'Canapés' },
@@ -15,12 +16,6 @@ const CATEGORIES = [
   { value: 'literie', label: 'Literie' },
   { value: 'mobilier-exterieur', label: 'Mobilier extérieur' },
 ];
-
-const SUBCATEGORIES: Record<string, { value: string; label: string }[]> = {
-  canapes: [{ value: 'canapes-fixes', label: 'Canapés fixes' }, { value: 'convertibles', label: 'Convertibles' }],
-  tables: [{ value: 'tables-basses', label: 'Tables basses' }, { value: 'tables-repas', label: 'Tables de repas' }],
-  literie: [{ value: 'matelas', label: 'Matelas' }, { value: 'sommiers', label: 'Sommiers' }, { value: 'linge-de-lit', label: 'Linge de lit' }],
-};
 
 const emptyForm = {
   name: '', slug: '', category: 'canapes', subcategory: '', price: '', original_price: '',
@@ -36,16 +31,16 @@ type FormState = typeof emptyForm;
 type InputProps = {
   label: string; name: string; type?: string; required?: boolean; placeholder?: string;
   form: FormState; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  hint?: string;
+  hint?: string; min?: string;
 };
-const Input = ({ label, name, type = 'text', required = false, placeholder = '', form, onChange, hint }: InputProps) => (
+const Input = ({ label, name, type = 'text', required = false, placeholder = '', form, onChange, hint, min }: InputProps) => (
   <div>
     <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">
       {label}{required && <span className="text-[#fff500] ml-0.5">*</span>}
     </label>
     <input
       type={type} name={name} value={(form as any)[name]} onChange={onChange}
-      required={required} placeholder={placeholder}
+      required={required} placeholder={placeholder} min={min}
       className="w-full bg-white/5 border border-white/15 text-white text-sm px-3 py-2.5 focus:outline-none focus:border-[#fff500] placeholder-gray-600"
     />
     {hint && <p className="text-[10px] text-[#fff500]/70 mt-1">{hint}</p>}
@@ -60,6 +55,8 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const isZeroStock = Number(form.stock_count) <= 0;
+  const { subcategories } = useSubcategories();
 
   useEffect(() => {
     if (!isNew && id) {
@@ -105,7 +102,14 @@ export default function ProductForm() {
         ...prev,
         [name]: type === 'checkbox' ? checked : value,
         ...(name === 'name' && isNew ? { slug: toSeoSlug(value) } : {}),
+        ...(name === 'category' ? { subcategory: '' } : {}),
       };
+
+      if (name === 'stock_count') {
+        const stock = Math.max(0, parseInt(value, 10) || 0);
+        next.stock_count = String(stock);
+        next.in_stock = stock > 0;
+      }
 
       // Le prix actuel est la base fixe — les autres champs se calculent depuis lui
       const currentPrice = parseFloat(name === 'price' ? value : prev.price);
@@ -132,6 +136,7 @@ export default function ProductForm() {
     setSaving(true);
     setError('');
 
+    const stockCount = Math.max(0, parseInt(form.stock_count, 10) || 0);
     const payload = {
       name: form.name,
       slug: form.slug,
@@ -147,8 +152,8 @@ export default function ProductForm() {
       dimensions: form.dimensions,
       material: form.material,
       colors: form.colors ? form.colors.split(',').map(c => c.trim()).filter(Boolean) : [],
-      in_stock: form.in_stock,
-      stock_count: parseInt(form.stock_count) || 0,
+      in_stock: stockCount > 0 && form.in_stock,
+      stock_count: stockCount,
       is_new: form.is_new,
       is_featured: form.is_featured,
       is_weekly_arrival: form.is_weekly_arrival,
@@ -227,7 +232,9 @@ export default function ProductForm() {
                 <label className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1.5 block">Sous-catégorie</label>
                 <select name="subcategory" value={form.subcategory} onChange={handleChange} className={SELECT_CLS}>
                   <option value="">Aucune</option>
-                  {(SUBCATEGORIES[form.category] || []).map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                  {subcategories
+                    .filter(subcategory => subcategory.parentSlug === form.category)
+                    .map(subcategory => <option key={subcategory.id} value={subcategory.slug}>{subcategory.name}</option>)}
                 </select>
               </div>
             </div>
@@ -278,10 +285,17 @@ export default function ProductForm() {
             <h2 className="font-bold text-sm text-gray-300 uppercase tracking-wide mb-4">Stock</h2>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <input type="checkbox" name="in_stock" id="in_stock" checked={form.in_stock} onChange={handleChange} className="accent-[#fff500] w-4 h-4" />
-                <label htmlFor="in_stock" className="text-sm text-white font-medium">En stock</label>
+                <input type="checkbox" name="in_stock" id="in_stock" checked={form.in_stock && !isZeroStock} disabled={isZeroStock} onChange={handleChange} className="accent-[#fff500] w-4 h-4 disabled:opacity-40" />
+                <label htmlFor="in_stock" className={`text-sm font-medium ${isZeroStock ? 'text-gray-500' : 'text-white'}`}>
+                  {isZeroStock ? 'Épuisé — stock à 0' : 'En stock'}
+                </label>
               </div>
-              <Input form={form} onChange={handleChange} label="Quantité en stock" name="stock_count" type="number" />
+              <Input form={form} onChange={handleChange} label="Quantité en stock" name="stock_count" type="number" min="0" />
+              {isZeroStock && (
+                <div className="bg-red-500/10 border border-red-500/30 px-3 py-2 text-xs font-bold text-red-300">
+                  Badge automatique : Épuisé
+                </div>
+              )}
             </div>
           </div>
 
@@ -294,6 +308,7 @@ export default function ProductForm() {
               <option value="last">Dernière pièce</option>
               <option value="bestseller">Best seller</option>
             </select>
+            <p className="text-[10px] text-gray-500 mt-2">Le badge « Épuisé » s’affiche automatiquement lorsque le stock atteint 0.</p>
           </div>
 
           <div className="bg-black/40 border border-white/10 p-5">

@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { dbProductToProduct } from '../lib/productUtils';
 import ProductCard from '../components/ui/ProductCard';
 import { Product } from '../types';
+import { useSubcategories } from '../hooks/useSubcategories';
 
 const sortOptions = [
   { value: 'promo', label: 'Meilleures promotions' },
@@ -23,8 +24,10 @@ export default function CategoryPage() {
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { subcategories } = useSubcategories();
 
   const category = categories.find(c => c.slug === slug);
+  const categorySubcategories = subcategories.filter(item => item.parentSlug === slug);
 
   useEffect(() => {
     if (!slug) return;
@@ -104,7 +107,7 @@ export default function CategoryPage() {
       </div>
 
       <div className="max-w-screen-xl mx-auto px-4 py-8">
-        {category.subcategories && category.subcategories.length > 0 && (
+        {categorySubcategories.length > 0 && (
           <div className="flex gap-2 mb-6 flex-wrap">
             <Link
               to={`/categorie/${category.slug}`}
@@ -112,7 +115,7 @@ export default function CategoryPage() {
             >
               Tout voir
             </Link>
-            {category.subcategories.map(subcat => (
+            {categorySubcategories.map(subcat => (
               <Link
                 key={subcat.id}
                 to={`/categorie/${category.slug}/${subcat.slug}`}

@@ -16,7 +16,7 @@ const faqs = [
   },
   {
     q: 'Livrez-vous partout en France ?',
-    a: 'Oui, nous livrons dans toute la France métropolitaine. La livraison est estimée sous 5 à 10 jours ouvrés selon votre localisation. Vous pouvez aussi choisir le retrait gratuit en magasin à Saint-Maurice (94).',
+    a: 'Oui, nous livrons dans toute la France métropolitaine sous 5 à 10 jours ouvrés. Les frais sont de 6,90 € sous 50 €, 29 € de 50 € à 299,99 €, 99 € de 300 € à 999,99 €, 129 € de 1 000 € à 1 999,99 €, puis gratuits dès 2 000 €. Le retrait en magasin à Saint-Maurice est gratuit.',
   },
   {
     q: 'Quels modes de paiement acceptez-vous ?',

@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /commande-confirmee
+
+# Robots de recherche et assistants IA explicitement autorisés pour le GEO.
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: Google-Extended
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /checkout
+Disallow: /commande-confirmee
+
+Sitemap: https://editionmade.com/sitemap.xml

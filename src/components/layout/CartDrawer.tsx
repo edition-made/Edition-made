@@ -4,6 +4,7 @@ import { useCart } from '../../context/CartContext';
 
 export default function CartDrawer() {
   const { items, isCartOpen, closeCart, removeItem, updateQuantity, totalPrice, totalItems } = useCart();
+  const hasUnavailableItems = items.some(item => !item.product.inStock || item.product.stockCount === 0);
 
   if (!isCartOpen) return null;
 
@@ -39,8 +40,10 @@ export default function CartDrawer() {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-              {items.map((item) => (
-                <div key={`${item.product.id}-${item.selectedColor}`} className="flex gap-3">
+              {items.map((item) => {
+                const isSoldOut = !item.product.inStock || item.product.stockCount === 0;
+                return (
+                <div key={`${item.product.id}-${item.selectedColor}`} className={`flex gap-3 ${isSoldOut ? 'border border-red-200 p-2' : ''}`}>
                   <div className="w-20 h-20 bg-gray-100 flex-shrink-0 overflow-hidden">
                     <img
                       src={item.product.images[0]}
@@ -53,6 +56,7 @@ export default function CartDrawer() {
                     {item.selectedColor && (
                       <p className="text-xs text-gray-500 mt-0.5">{item.selectedColor}</p>
                     )}
+                    {isSoldOut && <p className="mt-1 text-[10px] font-black uppercase text-red-600">Épuisé</p>}
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center border border-gray-200">
                         <button
@@ -63,8 +67,9 @@ export default function CartDrawer() {
                         </button>
                         <span className="w-8 text-center text-sm font-semibold">{item.quantity}</span>
                         <button
+                          disabled={isSoldOut}
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                          className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center hover:bg-gray-100 transition-colors disabled:cursor-not-allowed disabled:opacity-30"
                         >
                           <Plus size={12} />
                         </button>
@@ -81,7 +86,7 @@ export default function CartDrawer() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
 
             <div className="border-t border-gray-200 p-5 space-y-4">
@@ -94,13 +99,19 @@ export default function CartDrawer() {
                   Paiement en 3x sans frais avec <span className="font-black">Alma</span> dès 100€
                 </p>
               </div>
-              <Link
-                to="/checkout"
-                onClick={closeCart}
-                className="btn-black w-full justify-center"
-              >
-                Commander <ArrowRight size={16} />
-              </Link>
+              {hasUnavailableItems ? (
+                <div className="border border-red-200 bg-red-50 p-3 text-center text-xs font-bold text-red-700">
+                  Retirez les produits épuisés pour commander.
+                </div>
+              ) : (
+                <Link
+                  to="/checkout"
+                  onClick={closeCart}
+                  className="btn-black w-full justify-center"
+                >
+                  Commander <ArrowRight size={16} />
+                </Link>
+              )}
               <Link
                 to="/panier"
                 onClick={closeCart}

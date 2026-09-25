@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Truck, Store, Tag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { getDeliveryCost } from '../lib/shipping';
 
 export default function CartPage() {
   const { items, removeItem, updateQuantity, totalPrice, clearCart } = useCart();
+  const hasUnavailableItems = items.some(item => !item.product.inStock || item.product.stockCount === 0);
+  const estimatedDeliveryCost = getDeliveryCost(totalPrice);
+  const estimatedTotal = totalPrice + estimatedDeliveryCost;
 
   if (items.length === 0) {
     return (
@@ -38,8 +42,10 @@ export default function CartPage() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
-            {items.map(item => (
-              <div key={`${item.product.id}-${item.selectedColor}`} className="bg-white p-4 flex gap-4">
+            {items.map(item => {
+              const isSoldOut = !item.product.inStock || item.product.stockCount === 0;
+              return (
+              <div key={`${item.product.id}-${item.selectedColor}`} className={`bg-white p-4 flex gap-4 ${isSoldOut ? 'border border-red-200' : ''}`}>
                 <Link to={`/produit/${item.product.slug}`} className="w-24 h-24 bg-gray-100 flex-shrink-0 overflow-hidden">
                   <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
                 </Link>
@@ -48,6 +54,7 @@ export default function CartPage() {
                   {item.selectedColor && (
                     <p className="text-xs text-gray-500 mt-0.5">Couleur : {item.selectedColor}</p>
                   )}
+                  {isSoldOut && <p className="mt-1 text-xs font-black uppercase text-red-600">Épuisé — retirez ce produit du panier</p>}
                   <div className="flex items-center gap-2 mt-1">
                     <span className="font-black text-base">{item.product.price} €</span>
                     {item.product.originalPrice && (
@@ -63,7 +70,7 @@ export default function CartPage() {
                         <Minus size={12} />
                       </button>
                       <span className="w-10 text-center text-sm font-semibold">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center hover:bg-gray-100">
+                      <button disabled={isSoldOut} onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30">
                         <Plus size={12} />
                       </button>
                     </div>
@@ -76,7 +83,7 @@ export default function CartPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
 
           <div className="space-y-4">
@@ -94,21 +101,30 @@ export default function CartPage() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Livraison</span>
-                  <span className="text-gray-500">Calculée au checkout</span>
+                  <span className="text-gray-600">Livraison estimée</span>
+                  <span className="font-semibold">
+                    {estimatedDeliveryCost === 0 ? 'Gratuite' : `${estimatedDeliveryCost.toFixed(2)} €`}
+                  </span>
                 </div>
+                <p className="text-[11px] text-gray-400">Le retrait en magasin reste gratuit.</p>
               </div>
               <div className="border-t border-gray-100 pt-3 mb-4">
                 <div className="flex justify-between">
                   <span className="font-black text-base">Total</span>
-                  <span className="font-black text-xl">{totalPrice.toFixed(2)} €</span>
+                  <span className="font-black text-xl">{estimatedTotal.toFixed(2)} €</span>
                 </div>
               </div>
-              <Link to="/checkout" className="btn-black w-full justify-center mb-3">
-                Commander <ArrowRight size={16} />
-              </Link>
+              {hasUnavailableItems ? (
+                <div className="mb-3 bg-red-50 border border-red-200 p-3 text-center text-xs font-bold text-red-700">
+                  Retirez les produits épuisés pour continuer.
+                </div>
+              ) : (
+                <Link to="/checkout" className="btn-black w-full justify-center mb-3">
+                  Commander <ArrowRight size={16} />
+                </Link>
+              )}
               <div className="bg-[#fff500]/20 border border-[#fff500] p-3 text-center">
-                <p className="text-xs font-semibold">3x sans frais à partir de {Math.ceil(totalPrice / 3).toFixed(2)} €/mois avec Alma</p>
+                <p className="text-xs font-semibold">3x avec Alma à partir de {(estimatedTotal / 3).toFixed(2)} €/mois</p>
               </div>
             </div>
 

@@ -3,18 +3,22 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, BookOpen, Users, MessageSquare,
   Warehouse, TrendingUp, LogOut, Menu, X, ChevronRight, LayoutGrid,
+  BarChart3,
+  ListTree,
 } from 'lucide-react';
 import { adminLogout } from './AdminAuth';
 
 const navItems = [
   { href: '/admin', label: 'Tableau de bord', icon: <LayoutDashboard size={18} /> },
+  { href: '/admin/visibilite', label: 'Visibilité', icon: <BarChart3 size={18} /> },
   { href: '/admin/produits', label: 'Produits', icon: <Package size={18} /> },
   { href: '/admin/blog', label: 'Blog', icon: <BookOpen size={18} /> },
   { href: '/admin/crm', label: 'CRM / Commandes', icon: <Users size={18} /> },
   { href: '/admin/contacts', label: 'Contacts', icon: <MessageSquare size={18} /> },
   { href: '/admin/stock', label: 'Stock', icon: <Warehouse size={18} /> },
   { href: '/admin/comptabilite', label: 'Comptabilité', icon: <TrendingUp size={18} /> },
-  { href: '/admin/categories', label: 'Photos catégories', icon: <LayoutGrid size={18} /> },
+  { href: '/admin/categories', label: 'Images « Nos univers »', icon: <LayoutGrid size={18} /> },
+  { href: '/admin/sous-categories', label: 'Sous-catégories', icon: <ListTree size={18} /> },
 ];
 
 interface AdminLayoutProps {

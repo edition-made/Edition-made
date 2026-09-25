@@ -76,6 +76,7 @@ export type DbOrder = {
   payment_method: string;
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
   stripe_payment_intent_id?: string;
+  alma_payment_id?: string;
   notes?: string;
   created_at: string;
   updated_at: string;

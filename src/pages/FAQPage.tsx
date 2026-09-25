@@ -8,7 +8,7 @@ const faqs = [
   },
   {
     q: 'Comment fonctionne la livraison ?',
-    a: 'Nous livrons partout en France métropolitaine. Les délais de livraison sont généralement de 5 à 10 jours ouvrés selon votre localisation. Le montant des frais de livraison est calculé lors du checkout en fonction de votre adresse et du volume des articles commandés.',
+    a: 'Nous livrons partout en France métropolitaine. Les délais sont généralement de 5 à 10 jours ouvrés. Les frais dépendent du montant des produits : 6,90 € jusqu’à 49,99 €, 29 € jusqu’à 299,99 €, 99 € jusqu’à 999,99 €, 129 € jusqu’à 1 999,99 €, puis livraison gratuite dès 2 000 €. Le retrait en magasin est gratuit.',
   },
   {
     q: 'Puis-je retirer ma commande en magasin ?',

@@ -83,64 +83,36 @@ export const handler = async (event) => {
     const pi = stripeEvent.data.object;
     const { order_id, order_number, customer_email } = pi.metadata;
 
-    // Mise à jour de la commande
-    await supabase
-      .from('orders')
-      .update({ payment_status: 'paid', status: 'confirmed', updated_at: new Date().toISOString() })
-      .eq('id', order_id);
-
-    // Récupération des lignes de commande pour décrémentation du stock
-    const { data: orderItems } = await supabase
-      .from('order_items')
-      .select('product_id, quantity')
-      .eq('order_id', order_id);
-
-    if (orderItems) {
-      for (const item of orderItems) {
-        await supabase.rpc('decrement_stock', {
-          p_product_id: item.product_id,
-          p_qty: item.quantity,
-        });
-      }
+    if (!order_id || !order_number || !customer_email) {
+      console.error('[webhook] Métadonnées Stripe manquantes', { paymentIntentId: pi.id });
+      return { statusCode: 400, body: 'Missing payment metadata' };
     }
 
-    // Mise à jour des totaux client
+    // Confirmation atomique et idempotente : un renvoi Stripe ne peut pas
+    // décrémenter le stock ou les statistiques client une seconde fois.
+    const { data: newlyConfirmed, error: confirmationError } = await supabase.rpc(
+      'confirm_stripe_order',
+      {
+        p_order_id: order_id,
+        p_payment_intent_id: pi.id,
+        p_amount_cents: pi.amount_received || pi.amount,
+      }
+    );
+
+    if (confirmationError) {
+      console.error('[webhook] Confirmation Stripe impossible:', confirmationError);
+      return { statusCode: 500, body: 'Order confirmation failed' };
+    }
+
+    if (!newlyConfirmed) {
+      return { statusCode: 200, body: JSON.stringify({ received: true, duplicate: true }) };
+    }
+
     const { data: order } = await supabase
       .from('orders')
       .select('customer_id, total, customer_first_name, customer_last_name, customer_phone, delivery_mode, delivery_address, delivery_city, delivery_zip')
       .eq('id', order_id)
       .single();
-
-    if (order?.customer_id) {
-      await supabase.rpc('increment_customer_totals', {
-        p_customer_id: order.customer_id,
-        p_amount: order.total,
-      }).catch(() => {
-        // La fonction RPC peut ne pas exister — on met à jour manuellement
-        return supabase
-          .from('customers')
-          .update({
-            total_orders: supabase.rpc('coalesce_increment', { row_id: order.customer_id }),
-            total_spent: supabase.rpc('coalesce_add', { row_id: order.customer_id, amount: order.total }),
-          })
-          .eq('id', order.customer_id);
-      });
-
-      // Mise à jour manuelle simple
-      const { data: cust } = await supabase
-        .from('customers')
-        .select('total_orders, total_spent')
-        .eq('id', order.customer_id)
-        .single();
-
-      if (cust) {
-        await supabase.from('customers').update({
-          total_orders: (cust.total_orders || 0) + 1,
-          total_spent: (parseFloat(cust.total_spent) || 0) + parseFloat(order.total),
-          updated_at: new Date().toISOString(),
-        }).eq('id', order.customer_id);
-      }
-    }
 
     // Emails de confirmation
     const { data: items } = await supabase
@@ -243,7 +215,9 @@ export const handler = async (event) => {
       await supabase
         .from('orders')
         .update({ payment_status: 'failed', status: 'cancelled', updated_at: new Date().toISOString() })
-        .eq('id', order_id);
+        .eq('id', order_id)
+        .eq('stripe_payment_intent_id', pi.id)
+        .eq('payment_status', 'pending');
     }
   }
 

@@ -3,7 +3,7 @@
   publish = "dist"
 
 [dev]
-  command = "npm run dev"
+  command = "npm run dev:vite"
   port = 8888
   targetPort = 5173
   framework = "#custom"
@@ -12,7 +12,29 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Link = "</llms.txt>; rel=\"describedby\"; type=\"text/markdown\""
+
 # Redirige /api/* vers les Netlify Functions (avant la règle catch-all SPA)
+[[redirects]]
+  from = "/llm.txt"
+  to = "/llms.txt"
+  status = 301
+
+[[redirects]]
+  from = "/llms-full.txt"
+  to = "/.netlify/functions/llms-full"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/.netlify/functions/sitemap"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/api/create-payment-intent"
   to = "/.netlify/functions/create-payment-intent"
@@ -21,6 +43,26 @@
 [[redirects]]
   from = "/api/stripe-webhook"
   to = "/.netlify/functions/stripe-webhook"
+  status = 200
+
+[[redirects]]
+  from = "/api/alma-eligibility"
+  to = "/.netlify/functions/alma-eligibility"
+  status = 200
+
+[[redirects]]
+  from = "/api/create-alma-payment"
+  to = "/.netlify/functions/create-alma-payment"
+  status = 200
+
+[[redirects]]
+  from = "/api/alma-ipn"
+  to = "/.netlify/functions/alma-ipn"
+  status = 200
+
+[[redirects]]
+  from = "/api/alma-payment-status"
+  to = "/.netlify/functions/alma-payment-status"
   status = 200
 
 [[redirects]]

@@ -1,0 +1,42 @@
+# Edition Made
+
+> Edition Made est un magasin français de mobilier et décoration haut de gamme à prix déstockés, avec vente en ligne et showroom de 500 m² à Saint-Maurice (Val-de-Marne).
+
+Edition Made propose des canapés, fauteuils, meubles, tables, chaises, literie, accessoires de décoration et mobilier extérieur. Les produits sont neufs, les stocks peuvent être limités et les arrivages évoluent régulièrement. Livraison en France et retrait gratuit au showroom. Les prix, promotions et disponibilités affichés sur les fiches produit sont les informations de référence.
+
+Frais de livraison à ajouter au prix des produits : 6,90 € pour une commande inférieure à 50 €, 29 € de 50 € à 299,99 €, 99 € de 300 € à 999,99 €, 129 € de 1 000 € à 1 999,99 €, puis livraison gratuite dès 2 000 €. Le retrait au showroom est toujours gratuit.
+
+Showroom : 14 avenue des Canadiens, 94410 Saint-Maurice, France. Ouvert du lundi au samedi de 10h00 à 18h30 et le dimanche de 14h00 à 18h30. Contact : +33 6 60 22 25 25 et contact@editionmade.com.
+
+## Catalogue
+
+- [Accueil](https://editionmade.com/): Présentation des offres, arrivages et univers de mobilier.
+- [Promotions](https://editionmade.com/promotions): Produits actuellement proposés en promotion.
+- [Arrivages](https://editionmade.com/arrivage): Nouveaux produits et arrivages de la semaine.
+- [Canapés](https://editionmade.com/categorie/canapes): Canapés fixes et convertibles.
+- [Fauteuils et poufs](https://editionmade.com/categorie/fauteuils-poufs): Fauteuils design et poufs.
+- [Meubles](https://editionmade.com/categorie/meubles): Mobilier pour les différentes pièces de la maison.
+- [Tables](https://editionmade.com/categorie/tables): Tables basses et tables de repas.
+- [Chaises et tabourets](https://editionmade.com/categorie/chaises-tabourets): Assises pour repas et cuisine.
+- [Literie](https://editionmade.com/categorie/literie): Matelas, sommiers et linge de lit.
+- [Décoration](https://editionmade.com/categorie/accessoires-decoration): Accessoires et décoration intérieure.
+- [Mobilier extérieur](https://editionmade.com/categorie/mobilier-exterieur): Salons de jardin et mobilier outdoor.
+- [Catalogue détaillé pour LLM](https://editionmade.com/llms-full.txt): Liste dynamique des produits disponibles et des articles publiés.
+
+## Informations clients
+
+- [Showroom](https://editionmade.com/magasin): Adresse, horaires, accès et services disponibles sur place.
+- [Livraison](https://editionmade.com/livraison): Modes, délais et conditions de livraison ou de retrait.
+- [Retours](https://editionmade.com/retours): Politique de retour et droit de rétractation.
+- [FAQ](https://editionmade.com/faq): Réponses aux principales questions sur les produits et services.
+- [Contact](https://editionmade.com/contact): Formulaire et coordonnées de contact.
+
+## Contenus éditoriaux
+
+- [Blog](https://editionmade.com/blog): Conseils mobilier, inspiration, tendances et actualités.
+- [Sitemap XML](https://editionmade.com/sitemap.xml): Inventaire complet des URL publiques indexables.
+
+## Optional
+
+- [Mentions légales](https://editionmade.com/mentions-legales): Informations légales et politique relative aux données.
+- [Robots](https://editionmade.com/robots.txt): Directives d’exploration du site.

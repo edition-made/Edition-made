@@ -1,14 +1,42 @@
 import { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Lock, Truck, Store, ChevronDown, ChevronUp, AlertCircle, Loader } from 'lucide-react';
+import { Lock, Truck, Store, ChevronDown, ChevronUp, AlertCircle, Loader, CreditCard, CalendarDays } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../context/CartContext';
+import { getDeliveryCost } from '../lib/shipping';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
 const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 const steps = ['Livraison', 'Paiement', 'Confirmation'];
+
+type AlmaPlan = {
+  installmentsCount: number;
+  customerTotalCostAmount: number;
+  paymentPlan: Array<{ totalAmount: number; dueDate: number }>;
+};
+
+type CheckoutApiResponse = {
+  error?: string;
+  plans?: AlmaPlan[];
+  clientSecret?: string;
+  orderNumber?: string;
+  redirectUrl?: string;
+};
+
+async function parseApiResponse(response: Response): Promise<CheckoutApiResponse> {
+  const rawBody = await response.text();
+  if (!rawBody.trim()) {
+    throw new Error('Le serveur de paiement n\'a renvoyé aucune réponse. Veuillez réessayer.');
+  }
+
+  try {
+    return JSON.parse(rawBody) as CheckoutApiResponse;
+  } catch {
+    throw new Error('La réponse du serveur de paiement est invalide. Veuillez réessayer.');
+  }
+}
 
 // ── Stripe Payment Form ────────────────────────────────────────────────────
 
@@ -48,12 +76,8 @@ function StripePaymentForm({ orderNumber, total, onBack }: PaymentFormProps) {
 
     // Paiement confirmé sans redirection (pas de 3DS)
     if (result.paymentIntent?.status === 'succeeded') {
-      // Envoi email de confirmation + mise à jour commande côté serveur
-      fetch('/api/send-order-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentIntentId: result.paymentIntent.id, orderNumber }),
-      }).catch(console.error);
+      // Le webhook Stripe est l'unique source de vérité pour confirmer la
+      // commande, décrémenter le stock et envoyer les emails.
       navigate(`/commande-confirmee?order_number=${orderNumber}&redirect_status=succeeded`);
     }
   };
@@ -106,7 +130,8 @@ function StripePaymentForm({ orderNumber, total, onBack }: PaymentFormProps) {
 // ── Checkout principal ─────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice } = useCart();
+  const hasUnavailableItems = items.some(item => !item.product.inStock || item.product.stockCount === 0);
   const [step, setStep] = useState(0);
   const [deliveryMode, setDeliveryMode] = useState<'delivery' | 'pickup'>('delivery');
   const [form, setForm] = useState({
@@ -114,61 +139,112 @@ export default function CheckoutPage() {
     address: '', city: '', zip: '', country: 'France',
   });
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const deliveryCost = getDeliveryCost(totalPrice, deliveryMode);
+  const orderTotal = totalPrice + deliveryCost;
 
-  // Stripe state
+  // Payment state
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [orderNumber, setOrderNumber] = useState<string | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'stripe' | 'alma' | null>(null);
   const [piLoading, setPiLoading] = useState(false);
   const [piError, setPiError] = useState<string | null>(null);
+  const [almaLoading, setAlmaLoading] = useState(false);
+  const [almaStarting, setAlmaStarting] = useState<number | null>(null);
+  const [almaPlans, setAlmaPlans] = useState<AlmaPlan[]>([]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const cartPayload = useCallback(() => items.map(i => ({
+    productId: i.product.id,
+    quantity: i.quantity,
+    image: i.product.images?.[0] ?? '',
+    selectedColor: i.selectedColor ?? '',
+  })), [items]);
+
+  const checkoutPayload = useCallback(() => ({
+    customer: {
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone,
+    },
+    deliveryMode,
+    address: form.address,
+    city: form.city,
+    zip: form.zip,
+    items: cartPayload(),
+  }), [form, deliveryMode, cartPayload]);
+
   const handleContinueToPayment = useCallback(async () => {
+    if (hasUnavailableItems) {
+      setPiError('Un produit de votre panier est épuisé. Retirez-le avant de continuer.');
+      return;
+    }
+
+    setPiError(null);
+    setStep(1);
+    setSelectedPaymentMethod(null);
+    setAlmaLoading(true);
+    setAlmaPlans([]);
+
+    try {
+      const res = await fetch('/api/alma-eligibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: cartPayload(), deliveryMode }),
+      });
+      const data = await parseApiResponse(res);
+      if (res.ok && Array.isArray(data.plans)) setAlmaPlans(data.plans);
+    } catch {
+      // Stripe reste disponible même si l'éligibilité Alma ne peut pas être chargée.
+    } finally {
+      setAlmaLoading(false);
+    }
+  }, [cartPayload, deliveryMode, hasUnavailableItems]);
+
+  const prepareStripePayment = useCallback(async () => {
     setPiLoading(true);
     setPiError(null);
-
     try {
       const res = await fetch('/api/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer: {
-            firstName: form.firstName,
-            lastName: form.lastName,
-            email: form.email,
-            phone: form.phone,
-          },
-          deliveryMode,
-          address: form.address,
-          city: form.city,
-          zip: form.zip,
-          items: items.map(i => ({
-            productId: i.product.id,
-            quantity: i.quantity,
-            image: i.product.images?.[0] ?? '',
-            selectedColor: i.selectedColor ?? '',
-          })),
-        }),
+        body: JSON.stringify(checkoutPayload()),
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setPiError(data.error || 'Une erreur est survenue. Veuillez réessayer.');
-        return;
+      const data = await parseApiResponse(res);
+      if (!res.ok) throw new Error(data.error || 'Impossible de préparer le paiement par carte.');
+      if (typeof data.clientSecret !== 'string' || typeof data.orderNumber !== 'string') {
+        throw new Error('La réponse Stripe est incomplète. Veuillez réessayer.');
       }
-
       setClientSecret(data.clientSecret);
       setOrderNumber(data.orderNumber);
-      setStep(1);
-    } catch {
-      setPiError('Impossible de contacter le serveur de paiement. Vérifiez votre connexion.');
+    } catch (error) {
+      setPiError(error instanceof Error ? error.message : 'Impossible de contacter le serveur de paiement.');
     } finally {
       setPiLoading(false);
     }
-  }, [form, deliveryMode, items]);
+  }, [checkoutPayload]);
+
+  const startAlmaPayment = useCallback(async (installmentsCount: number) => {
+    setAlmaStarting(installmentsCount);
+    setPiError(null);
+    try {
+      const res = await fetch('/api/create-alma-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...checkoutPayload(), installmentsCount }),
+      });
+      const data = await parseApiResponse(res);
+      if (!res.ok) throw new Error(data.error || 'Impossible de démarrer le paiement Alma.');
+      if (typeof data.redirectUrl !== 'string') throw new Error('Lien de paiement Alma invalide.');
+      window.location.assign(data.redirectUrl);
+    } catch (error) {
+      setPiError(error instanceof Error ? error.message : 'Impossible de contacter Alma.');
+      setAlmaStarting(null);
+    }
+  }, [checkoutPayload]);
 
   const stripeAppearance = {
     theme: 'stripe' as const,
@@ -315,18 +391,145 @@ export default function CheckoutPage() {
 
                 <button
                   onClick={handleContinueToPayment}
-                  disabled={piLoading || !form.firstName || !form.lastName || !form.email || !form.phone}
+                  disabled={
+                    hasUnavailableItems || !items.length || !form.firstName || !form.lastName ||
+                    !form.email || !form.phone ||
+                    (deliveryMode === 'delivery' && (!form.address || !form.city || !form.zip))
+                  }
                   className="btn-primary mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {piLoading
-                    ? <><Loader size={16} className="animate-spin" /> Préparation du paiement…</>
-                    : 'Continuer vers le paiement'
-                  }
+                  Continuer vers le paiement
                 </button>
               </div>
             )}
 
-            {/* ── Étape 1 : Stripe Elements ───────────────────── */}
+            {/* ── Étape 1 : choix du moyen de paiement ────────── */}
+            {step === 1 && !clientSecret && (
+              <div className="bg-white p-6">
+                <h2 className="font-display font-bold text-xl mb-2">Choisissez votre moyen de paiement</h2>
+                <p className="text-sm text-gray-500 mb-6">Le montant et le stock seront vérifiés avant le paiement.</p>
+
+                {piError && (
+                  <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 p-3 mb-4 text-sm">
+                    <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                    <span>{piError}</span>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <div className={`border-2 transition-colors ${selectedPaymentMethod === 'stripe' ? 'border-black' : 'border-gray-200'}`}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod('stripe')}
+                      disabled={almaStarting !== null || !stripePromise}
+                      className="w-full p-5 text-left hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-pressed={selectedPaymentMethod === 'stripe'}
+                    >
+                      <span className="flex items-center gap-4">
+                        <span className="w-11 h-11 bg-black text-white flex items-center justify-center flex-shrink-0">
+                          <CreditCard size={20} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-bold">Carte bancaire</span>
+                          <span className="block text-xs text-gray-500 mt-1">Paiement sécurisé par Stripe · CB, Visa, Mastercard</span>
+                        </span>
+                        <span className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === 'stripe' ? 'border-black' : 'border-gray-300'}`}>
+                          {selectedPaymentMethod === 'stripe' && <span className="h-2.5 w-2.5 rounded-full bg-black" />}
+                        </span>
+                      </span>
+                    </button>
+
+                    {selectedPaymentMethod === 'stripe' && (
+                      <div className="border-t border-gray-200 p-4">
+                        <button
+                          type="button"
+                          onClick={prepareStripePayment}
+                          disabled={piLoading || almaStarting !== null || !stripePromise}
+                          className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {piLoading ? <><Loader size={16} className="animate-spin" /> Préparation…</> : <><CreditCard size={16} /> Continuer avec la carte</>}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={`border-2 transition-colors ${selectedPaymentMethod === 'alma' ? 'border-[#e891a5]' : 'border-gray-200'}`}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPaymentMethod('alma')}
+                      disabled={piLoading || almaStarting !== null}
+                      className="w-full p-5 text-left hover:bg-pink-50/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-pressed={selectedPaymentMethod === 'alma'}
+                    >
+                      <span className="flex items-center gap-4">
+                        <span className="w-11 h-11 bg-[#f4b6c2] text-white font-black text-xl flex items-center justify-center flex-shrink-0">A</span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-bold">Paiement en plusieurs fois avec Alma</span>
+                          <span className="block text-xs text-gray-500 mt-1">Paiement sécurisé en 3x ou 4x</span>
+                        </span>
+                        <span className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${selectedPaymentMethod === 'alma' ? 'border-[#d97990]' : 'border-gray-300'}`}>
+                          {selectedPaymentMethod === 'alma' && <span className="h-2.5 w-2.5 rounded-full bg-[#d97990]" />}
+                        </span>
+                      </span>
+                    </button>
+
+                    {selectedPaymentMethod === 'alma' && (
+                      <div className="border-t border-gray-200 p-4">
+                        <p className="text-xs text-gray-500 mb-3">Choisissez votre nombre d’échéances. Vous serez ensuite redirigé vers Alma.</p>
+
+                        {almaLoading && (
+                          <div className="flex items-center gap-2 text-sm text-gray-500 py-2">
+                            <Loader size={15} className="animate-spin" /> Vérification de l’éligibilité…
+                          </div>
+                        )}
+
+                        {!almaLoading && almaPlans.length > 0 && (
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            {almaPlans.map((plan) => {
+                              const firstInstallment = plan.paymentPlan[0]?.totalAmount ?? Math.ceil(orderTotal * 100 / plan.installmentsCount);
+                              return (
+                                <button
+                                  type="button"
+                                  key={plan.installmentsCount}
+                                  onClick={() => startAlmaPayment(plan.installmentsCount)}
+                                  disabled={almaStarting !== null || piLoading}
+                                  className="border-2 border-black px-4 py-3 text-left hover:bg-black hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <span className="flex items-center gap-2 font-bold text-sm">
+                                    {almaStarting === plan.installmentsCount
+                                      ? <Loader size={15} className="animate-spin" />
+                                      : <CalendarDays size={15} />}
+                                    Payer en {plan.installmentsCount}x
+                                  </span>
+                                  <span className="block text-xs opacity-70 mt-1">
+                                    1re échéance estimée : {(firstInstallment / 100).toFixed(2)} €
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {!almaLoading && almaPlans.length === 0 && (
+                          <div className="text-xs text-gray-500">
+                            <p>Alma n’est pas disponible pour le montant ou la configuration de ce panier.</p>
+                            <button type="button" onClick={handleContinueToPayment} className="mt-3 font-bold text-black underline underline-offset-4">
+                              Vérifier à nouveau
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <button type="button" onClick={() => setStep(0)} className="btn-outline mt-5">
+                  Retour
+                </button>
+              </div>
+            )}
+
+            {/* ── Paiement carte : Stripe Elements ─────────────── */}
             {step === 1 && clientSecret && stripePromise && (
               <Elements
                 stripe={stripePromise}
@@ -334,12 +537,16 @@ export default function CheckoutPage() {
               >
                 <StripePaymentForm
                   orderNumber={orderNumber!}
-                  total={totalPrice}
-                  onBack={() => setStep(0)}
+                  total={orderTotal}
+                  onBack={() => {
+                    setClientSecret(null);
+                    setOrderNumber(null);
+                    setStep(0);
+                  }}
                 />
               </Elements>
             )}
-            {step === 1 && !stripePromise && (
+            {step === 1 && clientSecret && !stripePromise && (
               <div className="bg-white p-6">
                 <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 p-4 text-sm">
                   <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
@@ -386,11 +593,13 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between text-sm mb-3">
                     <span className="text-gray-500">Livraison</span>
-                    <span className="text-gray-400">{deliveryMode === 'pickup' ? 'Gratuit' : 'À calculer'}</span>
+                    <span className={deliveryCost === 0 ? 'text-gray-400' : 'font-semibold'}>
+                      {deliveryCost === 0 ? 'Gratuit' : `${deliveryCost.toFixed(2)} €`}
+                    </span>
                   </div>
                   <div className="flex justify-between font-black text-base">
                     <span>Total</span>
-                    <span>{totalPrice.toFixed(2)} €</span>
+                    <span>{orderTotal.toFixed(2)} €</span>
                   </div>
                 </div>
               </div>
