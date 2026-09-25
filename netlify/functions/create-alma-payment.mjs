@@ -10,6 +10,17 @@ import {
 const SITE_URL = (process.env.ALMA_SITE_URL || 'https://editionmade.com').replace(/\/$/, '');
 const FALLBACK_IMAGE_URL = 'https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp';
 
+// Alma pré-remplit son formulaire : un téléphone hors format E.164 déclenche
+// « Certaines informations doivent être corrigées avant l’envoi ».
+function toE164(value) {
+  const digits = String(value || '').replace(/[\s.\-()]/g, '');
+  if (/^\+\d{8,15}$/.test(digits)) return digits;
+  if (/^00\d{8,15}$/.test(digits)) return `+${digits.slice(2)}`;
+  if (/^0[1-9]\d{8}$/.test(digits)) return `+33${digits.slice(1)}`;
+  if (/^33[1-9]\d{8}$/.test(digits)) return `+${digits}`;
+  return null;
+}
+
 function json(statusCode, body) {
   return {
     statusCode,
@@ -57,11 +68,12 @@ export const handler = async (event) => {
       paymentMethod: 'alma',
     });
 
+    const phone = toE164(customer.phone);
     const addressPayload = {
       first_name: customer.firstName,
       last_name: customer.lastName,
       email: customer.email,
-      phone: customer.phone || '',
+      ...(phone ? { phone } : {}),
       line1: address || 'Retrait en magasin',
       postal_code: zip || '94410',
       city: city || 'Saint-Maurice',
@@ -107,7 +119,7 @@ export const handler = async (event) => {
         first_name: customer.firstName,
         last_name: customer.lastName,
         email: customer.email,
-        phone: customer.phone || '',
+        ...(phone ? { phone } : {}),
         account_id: order.id,
       },
       order: {
