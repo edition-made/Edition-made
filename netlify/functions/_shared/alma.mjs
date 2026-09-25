@@ -82,6 +82,8 @@ export function isTrustedAlmaPaymentUrl(value) {
   try {
     const url = new URL(value);
     return url.protocol === 'https:' && [
+      'checkout.getalma.eu',
+      'checkout.sandbox.getalma.eu',
       'pay.getalma.eu',
       'pay.sandbox.getalma.eu',
     ].includes(url.hostname);
