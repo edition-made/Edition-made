@@ -4,6 +4,7 @@ import { Clock, ArrowRight } from 'lucide-react';
 import { supabase, DbBlogPost } from '../lib/supabase';
 import { blogPosts as mockPosts } from '../data/blog';
 import { BlogPost } from '../types';
+import { useSeo, SITE_URL, SITE_NAME } from '../lib/useSeo';
 
 function toDb(p: BlogPost): DbBlogPost {
   return {
@@ -36,6 +37,12 @@ const CAT_COLORS: Record<string, string> = {
 };
 
 export default function BlogPage() {
+  useSeo({
+    title: `Blog mobilier et décoration : conseils et guides d'achat | ${SITE_NAME}`,
+    description: "Guides d'achat, conseils d'aménagement et idées déco pour meubler votre maison : canapés, tables, literie, décoration. Le blog du showroom Edition Made à Saint-Maurice (94).",
+    keywords: 'blog mobilier, conseils déco, guide achat meuble, aménagement intérieur, décoration maison',
+    canonical: `${SITE_URL}/blog`,
+  });
   const [posts, setPosts] = useState<DbBlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('');

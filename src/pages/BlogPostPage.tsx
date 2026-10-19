@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Clock, ArrowLeft, ArrowRight, Tag, ChevronDown } from 'lucide-react';
 import { supabase, DbBlogPost } from '../lib/supabase';
+import { useSeo, SeoOptions, SITE_URL, SITE_NAME, SITE_LOGO } from '../lib/useSeo';
 import { blogPosts as mockPosts } from '../data/blog';
 import { BlogPost } from '../types';
 
@@ -13,6 +14,74 @@ function toDb(p: BlogPost): DbBlogPost {
     read_time: p.readTime, tags: p.tags,
     seo_title: '', seo_description: '', seo_keywords: '',
     og_image: '', canonical_url: '', created_at: p.date, updated_at: p.date,
+  };
+}
+
+// Questions/réponses balisées dans le contenu (<h3 data-faq> suivi de <p>) -> données structurées FAQPage.
+function extractFaq(html: string): { q: string; a: string }[] {
+  if (typeof DOMParser === 'undefined' || !html.includes('data-faq')) return [];
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return Array.from(doc.querySelectorAll('h3[data-faq]')).flatMap(heading => {
+    const answer = heading.nextElementSibling?.textContent?.trim();
+    const question = heading.textContent?.trim();
+    return question && answer ? [{ q: question, a: answer }] : [];
+  });
+}
+
+function buildPostSeo(post: DbBlogPost): SeoOptions {
+  const url = post.canonical_url || `${SITE_URL}/blog/${post.slug}`;
+  const image = post.og_image || post.cover_image;
+  const description = post.seo_description || post.excerpt;
+  const published = post.published_at || post.created_at;
+  const keywords = post.seo_keywords || (post.tags || []).join(', ');
+  const faq = extractFaq(post.content || '');
+
+  const jsonLd: Record<string, unknown>[] = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description,
+      image: image ? [image] : undefined,
+      datePublished: published,
+      dateModified: post.updated_at || published,
+      inLanguage: 'fr-FR',
+      articleSection: post.category,
+      keywords,
+      mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+      author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+      publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL, logo: { '@type': 'ImageObject', url: SITE_LOGO } },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Accueil', item: SITE_URL },
+        { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog` },
+        { '@type': 'ListItem', position: 3, name: post.title, item: url },
+      ],
+    },
+  ];
+  if (faq.length) {
+    jsonLd.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map(item => ({ '@type': 'Question', name: item.q, acceptedAnswer: { '@type': 'Answer', text: item.a } })),
+    });
+  }
+
+  return {
+    title: post.seo_title || `${post.title} | ${SITE_NAME}`,
+    description,
+    keywords,
+    canonical: url,
+    image,
+    type: 'article',
+    publishedTime: published || undefined,
+    modifiedTime: post.updated_at || undefined,
+    section: post.category,
+    tags: post.tags,
+    jsonLd,
   };
 }
 
@@ -124,6 +193,8 @@ export default function BlogPostPage() {
     };
     fetchPost();
   }, [slug]);
+
+  useSeo(post ? buildPostSeo(post) : null);
 
   if (loading) {
     return (
