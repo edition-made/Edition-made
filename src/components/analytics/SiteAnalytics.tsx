@@ -54,7 +54,8 @@ function getAttribution(): Attribution {
 
 function track(eventName: 'page_view' | 'click', pagePath: string, targetPath?: string) {
   const attribution = getAttribution();
-  void supabase.from('analytics_events').insert({
+  // Le builder Supabase est paresseux : la requête ne part qu'avec un .then().
+  supabase.from('analytics_events').insert({
     event_name: eventName,
     visitor_id: anonymousId(localStorage, 'em_visitor_id'),
     session_id: anonymousId(sessionStorage, 'em_session_id'),
@@ -62,7 +63,7 @@ function track(eventName: 'page_view' | 'click', pagePath: string, targetPath?: 
     target_path: targetPath || null,
     source: attribution.source,
     source_detail: attribution.detail,
-  });
+  }).then(() => undefined, () => undefined);
 }
 
 function clickTarget(element: HTMLElement): string {
