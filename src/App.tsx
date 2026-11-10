@@ -24,6 +24,7 @@ import MentionsLegalesPage from './pages/MentionsLegalesPage';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import SiteAnalytics from './components/analytics/SiteAnalytics';
 import WebMCPTools from './components/analytics/WebMCPTools';
+import WhatnotPopup from './components/layout/WhatnotPopup';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -43,6 +44,7 @@ export default function App() {
       <CartProvider>
         <SiteAnalytics />
         <WebMCPTools />
+        <WhatnotPopup />
         <Routes>
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/" element={<Layout><HomePage /></Layout>} />

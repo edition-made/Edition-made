@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, BookOpen, Users, MessageSquare,
-  Warehouse, TrendingUp, LogOut, Menu, X, ChevronRight, LayoutGrid,
+  Warehouse, TrendingUp, Radio, LogOut, Menu, X, ChevronRight, LayoutGrid,
   BarChart3,
   ListTree,
 } from 'lucide-react';
@@ -17,6 +17,7 @@ const navItems = [
   { href: '/admin/contacts', label: 'Contacts', icon: <MessageSquare size={18} /> },
   { href: '/admin/stock', label: 'Stock', icon: <Warehouse size={18} /> },
   { href: '/admin/comptabilite', label: 'Comptabilité', icon: <TrendingUp size={18} /> },
+  { href: '/admin/whatnot', label: 'Whatnot', icon: <Radio size={18} /> },
   { href: '/admin/categories', label: 'Images « Nos univers »', icon: <LayoutGrid size={18} /> },
   { href: '/admin/sous-categories', label: 'Sous-catégories', icon: <ListTree size={18} /> },
 ];
