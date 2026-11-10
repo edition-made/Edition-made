@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Mail, Users, Send, Download, Trash2, Eye, Loader, CheckCircle2 } from 'lucide-react';
 
 type Subscriber = {
-  id: string; email: string; first_name: string; phone: string;
+  id: string; email: string; first_name: string; last_name: string; phone: string;
   status: 'pending' | 'confirmed' | 'unsubscribed'; promo_code: string | null;
   source: string; created_at: string; confirmed_at: string | null;
 };
@@ -69,8 +69,8 @@ export default function NewsletterAdmin() {
   const visible = filter ? subs.filter(s => s.status === filter) : subs;
 
   const exportCsv = () => {
-    const rows = [['email', 'prenom', 'telephone', 'statut', 'code_promo', 'inscrit_le']]
-      .concat(visible.map(s => [s.email, s.first_name, s.phone, s.status, s.promo_code || '', s.created_at]));
+    const rows = [['email', 'prenom', 'nom', 'telephone', 'statut', 'code_promo', 'inscrit_le']]
+      .concat(visible.map(s => [s.email, s.first_name, s.last_name, s.phone, s.status, s.promo_code || '', s.created_at]));
     const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
     const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }));
     const a = document.createElement('a');
@@ -157,12 +157,13 @@ export default function NewsletterAdmin() {
           <div className="overflow-x-auto border border-white/10">
             <table className="w-full text-sm text-left">
               <thead className="bg-white/5 text-gray-400 text-xs uppercase">
-                <tr><th className="p-3">Prénom</th><th className="p-3">E-mail</th><th className="p-3">Téléphone</th><th className="p-3">Statut</th><th className="p-3">Code promo</th><th className="p-3">Inscrit le</th><th /></tr>
+                <tr><th className="p-3">Prénom</th><th className="p-3">Nom</th><th className="p-3">E-mail</th><th className="p-3">Téléphone</th><th className="p-3">Statut</th><th className="p-3">Code promo</th><th className="p-3">Inscrit le</th><th /></tr>
               </thead>
               <tbody>
                 {visible.map(s => (
                   <tr key={s.id} className="border-t border-white/10 text-gray-300">
                     <td className="p-3">{s.first_name}</td>
+                    <td className="p-3">{s.last_name || '—'}</td>
                     <td className="p-3">{s.email}</td>
                     <td className="p-3">{s.phone || '—'}</td>
                     <td className="p-3"><span className={`text-[11px] px-2 py-0.5 ${statusLabel[s.status].cls}`}>{statusLabel[s.status].label}</span></td>
@@ -171,7 +172,7 @@ export default function NewsletterAdmin() {
                     <td className="p-3"><button onClick={() => remove(s)} aria-label="Supprimer" className="text-gray-500 hover:text-red-400"><Trash2 size={14} /></button></td>
                   </tr>
                 ))}
-                {visible.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-gray-500">Aucun abonné</td></tr>}
+                {visible.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-gray-500">Aucun abonné</td></tr>}
               </tbody>
             </table>
           </div>

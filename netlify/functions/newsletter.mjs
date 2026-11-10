@@ -26,9 +26,12 @@ async function subscribe(supabase, body) {
   if (body.website) return json(200, { ok: true }); // honeypot anti-bot
   const email = String(body.email || '').trim().toLowerCase();
   const firstName = String(body.firstName || '').trim().slice(0, 60);
+  const lastName = String(body.lastName || '').trim().slice(0, 60);
   const phone = String(body.phone || '').trim().slice(0, 30);
   if (!isValidEmail(email)) return json(400, { error: 'Adresse e-mail invalide.' });
   if (!firstName) return json(400, { error: 'Merci d’indiquer votre prénom.' });
+  if (!lastName) return json(400, { error: 'Merci d’indiquer votre nom.' });
+  if (phone.replace(/[^\d]/g, '').length < 8) return json(400, { error: 'Merci d’indiquer un numéro de téléphone valide.' });
   if (body.consent !== true) return json(400, { error: 'Veuillez accepter de recevoir nos offres par e-mail.' });
 
   const { data: existing } = await supabase
@@ -58,7 +61,7 @@ async function subscribe(supabase, body) {
     const { data: updated } = await supabase
       .from('newsletter_subscribers')
       .update({
-        status: 'pending', first_name: firstName, phone, confirm_token: randomToken(),
+        status: 'pending', first_name: firstName, last_name: lastName, phone, confirm_token: randomToken(),
         consent_at: new Date().toISOString(), confirmation_sent_at: new Date().toISOString(), unsubscribed_at: null,
       })
       .eq('id', existing.id)
@@ -71,7 +74,7 @@ async function subscribe(supabase, body) {
   const { data: created, error } = await supabase
     .from('newsletter_subscribers')
     .insert({
-      email, first_name: firstName, phone, status: 'pending',
+      email, first_name: firstName, last_name: lastName, phone, status: 'pending',
       confirm_token: randomToken(), unsubscribe_token: randomToken(),
       source: String(body.source || 'home').slice(0, 30), confirmation_sent_at: new Date().toISOString(),
     })

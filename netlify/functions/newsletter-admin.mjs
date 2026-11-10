@@ -33,7 +33,7 @@ export const handler = async (event) => {
     if (body.action === 'list') {
       const { data, error } = await supabase
         .from('newsletter_subscribers')
-        .select('id, email, first_name, phone, status, promo_code, source, created_at, confirmed_at')
+        .select('id, email, first_name, last_name, phone, status, promo_code, source, created_at, confirmed_at')
         .order('created_at', { ascending: false })
         .limit(5000);
       if (error) throw error;

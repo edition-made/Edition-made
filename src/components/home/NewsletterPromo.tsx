@@ -3,6 +3,7 @@ import { Gift, MailCheck, Loader } from 'lucide-react';
 
 export default function NewsletterPromo() {
   const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
@@ -20,7 +21,7 @@ export default function NewsletterPromo() {
       const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'subscribe', firstName, email, phone, consent, website, source: 'home' }),
+        body: JSON.stringify({ action: 'subscribe', firstName, lastName, email, phone, consent, website, source: 'home' }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Une erreur est survenue.');
@@ -66,11 +67,16 @@ export default function NewsletterPromo() {
                 className="w-full bg-white px-3 py-3 text-sm text-black focus:outline-none"
               />
               <input
-                type="tel" value={phone} onChange={e => setPhone(e.target.value)}
-                placeholder="Téléphone (facultatif)" autoComplete="tel" maxLength={30}
+                type="text" required value={lastName} onChange={e => setLastName(e.target.value)}
+                placeholder="Nom" autoComplete="family-name" maxLength={60}
                 className="w-full bg-white px-3 py-3 text-sm text-black focus:outline-none"
               />
             </div>
+            <input
+              type="tel" required value={phone} onChange={e => setPhone(e.target.value)}
+              placeholder="Téléphone" autoComplete="tel" maxLength={30}
+              className="w-full bg-white px-3 py-3 text-sm text-black focus:outline-none"
+            />
             <input
               type="email" required value={email} onChange={e => setEmail(e.target.value)}
               placeholder="Adresse e-mail" autoComplete="email" maxLength={254}
