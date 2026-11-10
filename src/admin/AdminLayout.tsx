@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Package, BookOpen, Users, MessageSquare,
-  Warehouse, TrendingUp, LogOut, Menu, X, ChevronRight,
+  Warehouse, TrendingUp, Radio, LogOut, Menu, X, ChevronRight,
 } from 'lucide-react';
 import { adminLogout } from './AdminAuth';
 
@@ -14,6 +14,7 @@ const navItems = [
   { href: '/admin/contacts', label: 'Contacts', icon: <MessageSquare size={18} /> },
   { href: '/admin/stock', label: 'Stock', icon: <Warehouse size={18} /> },
   { href: '/admin/comptabilite', label: 'Comptabilité', icon: <TrendingUp size={18} /> },
+  { href: '/admin/whatnot', label: 'Whatnot', icon: <Radio size={18} /> },
 ];
 
 interface AdminLayoutProps {

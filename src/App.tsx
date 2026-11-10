@@ -16,6 +16,7 @@ import PromotionsPage from './pages/PromotionsPage';
 import ArrivagePage from './pages/ArrivagePage';
 import FAQPage from './pages/FAQPage';
 import AdminApp from './admin/AdminApp';
+import WhatnotPopup from './components/layout/WhatnotPopup';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -32,6 +33,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <CartProvider>
+        <WhatnotPopup />
         <Routes>
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/" element={<Layout><HomePage /></Layout>} />

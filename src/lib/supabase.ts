@@ -120,3 +120,14 @@ export type DbContactSubmission = {
   notes?: string;
   created_at: string;
 };
+
+export type DbWhatnotSettings = {
+  id: number;
+  enabled: boolean;
+  url: string;
+  title: string;
+  description: string;
+  event_start?: string | null;
+  event_end?: string | null;
+  updated_at: string;
+};
