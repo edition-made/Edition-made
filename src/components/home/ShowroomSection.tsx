@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Phone, ArrowRight, CheckCircle } from 'lucide-react';
+import { useStoreHours } from '../../lib/storeHours';
 
 export default function ShowroomSection() {
+  const { lines } = useStoreHours();
   return (
     <section className="py-14 bg-[#dad5c7]/15">
       <div className="max-w-screen-xl mx-auto px-4">
@@ -44,7 +46,7 @@ export default function ShowroomSection() {
                 <Clock size={16} className="text-[#fff500] bg-black p-0.5 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="font-bold text-xs uppercase mb-1">Horaires</p>
-                  <p className="text-xs text-gray-600">Lun–Sam : 10h–19h<br />Dim : 10h–17h</p>
+                  <p className="text-xs text-gray-600">{lines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">

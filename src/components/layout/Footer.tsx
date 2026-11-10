@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Clock, Instagram, Facebook, ArrowRight } from 'lucide-react';
 
+import { useStoreHours } from '../../lib/storeHours';
+
 export default function Footer() {
+  const { lines } = useStoreHours();
   return (
     <footer className="bg-black text-white">
       <div className="max-w-screen-xl mx-auto px-4 pt-14 pb-8">
@@ -99,8 +102,7 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <Clock size={16} className="text-[#fff500] mt-0.5 flex-shrink-0" />
                 <span className="text-sm text-gray-400">
-                  Lun–Sam : 10h–18h30<br />
-                  Dim : 14h–18h30
+                  {lines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}
                 </span>
               </li>
             </ul>

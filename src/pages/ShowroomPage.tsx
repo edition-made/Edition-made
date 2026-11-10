@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Phone, Mail, Car, Bus, CheckCircle, ArrowRight } from 'lucide-react';
 
+import { useStoreHours, WEEK_ORDER, dayName, dayLabel } from '../lib/storeHours';
+
 export default function ShowroomPage() {
+  const { hours } = useStoreHours();
   return (
     <div className="bg-white">
       <div className="bg-black text-white py-14">
@@ -104,15 +107,7 @@ export default function ShowroomPage() {
             <Clock size={24} className="text-[#fff500] mb-3" />
             <h3 className="font-display font-bold text-lg mb-3">Horaires d'ouverture</h3>
             <div className="space-y-2 text-sm">
-              {[
-                { day: 'Lundi', hours: '10h00 – 18h30' },
-                { day: 'Mardi', hours: '10h00 – 18h30' },
-                { day: 'Mercredi', hours: '10h00 – 18h30' },
-                { day: 'Jeudi', hours: '10h00 – 18h30' },
-                { day: 'Vendredi', hours: '10h00 – 18h30' },
-                { day: 'Samedi', hours: '10h00 – 18h30' },
-                { day: 'Dimanche', hours: '14h00 – 18h30' },
-              ].map(item => (
+              {WEEK_ORDER.map(day => hours.find(h => h.day === day)).filter((h): h is NonNullable<typeof h> => !!h).map(h => ({ day: dayName(h.day), hours: dayLabel(h) })).map(item => (
                 <div key={item.day} className="flex justify-between">
                   <span className="text-gray-400">{item.day}</span>
                   <span className="text-white font-medium">{item.hours}</span>

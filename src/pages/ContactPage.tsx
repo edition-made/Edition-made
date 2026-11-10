@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, MessageCircle, Send, Check } from 'lucide-react';
 
+import { useStoreHours } from '../lib/storeHours';
+
 export default function ContactPage() {
+  const { lines } = useStoreHours();
   const [form, setForm] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
 
@@ -79,8 +82,7 @@ export default function ContactPage() {
                 <div>
                   <p className="font-bold text-sm mb-1">Horaires</p>
                   <p className="text-sm text-gray-600">
-                    Lun–Sam : 10h00 – 18h30<br />
-                    Dimanche : 14h00 – 18h30
+                    {lines.map((line, i) => <span key={line}>{i > 0 && <br />}{line}</span>)}
                   </p>
                 </div>
               </div>

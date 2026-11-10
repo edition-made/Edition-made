@@ -190,13 +190,33 @@ export default function ProductsAdmin() {
     setDragOverIdx(null);
   };
 
+  // Enregistre l'ordre en le renumérotant sur TOUT le catalogue : les produits déplacés
+  // reprennent les emplacements qu'ils occupaient, les autres gardent leur rang relatif.
+  // (Avant, seuls les produits visibles étaient numérotés 10, 20… et passaient derrière
+  // ceux qui avaient encore la valeur 0 par défaut.)
   const saveOrder = async () => {
     setSaving(true);
-    await Promise.all(
-      products.map((p, i) =>
-        supabase.from('products').update({ sort_order: (i + 1) * 10 }).eq('id', p.id)
-      )
-    );
+    const { data: all, error } = await supabase
+      .from('products')
+      .select('id, sort_order, created_at')
+      .order('sort_order', { ascending: true, nullsFirst: false })
+      .order('created_at', { ascending: false });
+    if (error || !all) { setSaving(false); alert('Impossible d’enregistrer l’ordre. Réessayez.'); return; }
+
+    const visibleIds = new Set(products.map(p => p.id));
+    const queue = products.map(p => p.id);
+    const finalOrder = all.map(row => (visibleIds.has(row.id) ? queue.shift()! : row.id));
+    const previous = new Map(all.map(row => [row.id, row.sort_order]));
+
+    const updates = finalOrder
+      .map((id, i) => ({ id, sort_order: (i + 1) * 10 }))
+      .filter(u => previous.get(u.id) !== u.sort_order);
+
+    for (let i = 0; i < updates.length; i += 25) {
+      await Promise.all(
+        updates.slice(i, i + 25).map(u => supabase.from('products').update({ sort_order: u.sort_order }).eq('id', u.id))
+      );
+    }
     setOriginalOrder([...products]);
     setOrderChanged(false);
     setSaving(false);

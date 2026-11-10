@@ -1,4 +1,5 @@
 import { MapPin, Clock, Phone, Navigation, ExternalLink } from 'lucide-react';
+import { useStoreHours } from '../../lib/storeHours';
 
 const DIRECTIONS_URL =
   'https://www.google.com/maps/dir/?api=1&destination=14+avenue+des+Canadiens,+94410+Saint-Maurice,+France&travelmode=driving';
@@ -10,6 +11,7 @@ const EMBED_URL =
   'https://maps.google.com/maps?q=14+avenue+des+Canadiens,+94410+Saint-Maurice,+France&t=&z=16&ie=UTF8&iwloc=&output=embed';
 
 export default function StoreMapSection() {
+  const { rows } = useStoreHours();
   return (
     <section className="bg-black">
       {/* Bandeau titre */}
@@ -93,10 +95,7 @@ export default function StoreMapSection() {
               <div className="w-full">
                 <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Horaires d'ouverture</p>
                 <div className="space-y-1.5">
-                  {[
-                    { jours: 'Lun – Sam', heures: '10h00 – 18h30', today: [1,2,3,4,5,6].includes(new Date().getDay()) },
-                    { jours: 'Dimanche', heures: '14h00 – 18h30', today: new Date().getDay() === 0 },
-                  ].map((row) => (
+                  {rows.map(r => ({ jours: r.label, heures: r.value, today: r.days.includes(new Date().getDay()) && r.value !== 'Fermé' })).map((row) => (
                     <div key={row.jours} className="flex items-center justify-between">
                       <span className={`text-xs ${row.today ? 'text-[#fff500] font-bold' : 'text-gray-400'}`}>
                         {row.jours}

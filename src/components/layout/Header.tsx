@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
+import SearchSuggest from './SearchSuggest';
+import { Link } from 'react-router-dom';
 import {
   Search, ShoppingCart, Menu, X, ChevronDown, Phone, MapPin, MessageSquare,
   Home, Tag, Sparkles, Sofa, Armchair, Star, Moon, Leaf, BookOpen, Store,
@@ -93,7 +94,6 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
 
   // Burger ouvert : la page derrière est figée, seul le menu défile
@@ -109,7 +109,6 @@ export default function Header() {
       document.body.style.overflow = prevBody;
     };
   }, [mobileOpen]);
-  const navigate = useNavigate();
   const { subcategories } = useSubcategories();
   const navLinks = useMemo(() => baseNavLinks.map(link => {
     const categoryMatch = link.href.match(/^\/categorie\/([^/]+)$/);
@@ -129,14 +128,6 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/recherche?q=${encodeURIComponent(searchQuery)}`);
-      setSearchOpen(false);
-    }
-  };
 
   return (
     <>
@@ -253,19 +244,7 @@ export default function Header() {
 
           {searchOpen && (
             <div className="py-3 border-t border-gray-100 animate-slide-up">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher un produit, une catégorie..."
-                  className="flex-1 border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:border-black"
-                  autoFocus
-                />
-                <button type="submit" className="bg-black text-white px-4 py-2 text-sm font-bold hover:bg-gray-900 transition-colors">
-                  Rechercher
-                </button>
-              </form>
+              <SearchSuggest autoFocus onDone={() => setSearchOpen(false)} />
             </div>
           )}
         </div>

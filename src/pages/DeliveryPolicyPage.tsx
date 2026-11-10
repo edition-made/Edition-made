@@ -1,7 +1,10 @@
 import { Truck, Clock, MapPin, Package, AlertCircle, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { useStoreHours } from '../lib/storeHours';
+
 export default function DeliveryPolicyPage() {
+  const { lines } = useStoreHours();
   return (
     <div className="bg-white">
       <div className="bg-black text-white py-12">
@@ -85,7 +88,7 @@ export default function DeliveryPolicyPage() {
             </div>
             <div className="bg-[#fff500]/10 border border-[#fff500]/30 p-4">
               <p className="font-black text-sm">Retrait en magasin : GRATUIT</p>
-              <p className="text-sm text-gray-600 mt-1">14 avenue des Canadiens, 94410 Saint-Maurice — Lun–Sam 10h–18h30, Dim 14h–18h30</p>
+              <p className="text-sm text-gray-600 mt-1">14 avenue des Canadiens, 94410 Saint-Maurice — {lines.join(' · ')}</p>
             </div>
           </section>
 

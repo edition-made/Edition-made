@@ -4,7 +4,10 @@ import { Check, Package, MapPin, Clock, ArrowRight, XCircle, Loader } from 'luci
 import { supabase, DbOrder, DbOrderItem } from '../lib/supabase';
 import { useCart } from '../context/CartContext';
 
+import { useStoreHours } from '../lib/storeHours';
+
 export default function OrderSuccessPage() {
+  const { lines } = useStoreHours();
   const [searchParams] = useSearchParams();
   const { clearCart } = useCart();
 
@@ -188,7 +191,7 @@ export default function OrderSuccessPage() {
                 <p className="text-sm text-gray-600">
                   <span className="font-semibold">Retrait en magasin</span><br />
                   14 avenue des Canadiens, 94410 Saint-Maurice<br />
-                  Lun–Sam 10h–19h · Dim 10h–17h
+                  {lines.join(' · ')}
                 </p>
               ) : (
                 <p className="text-sm text-gray-600">

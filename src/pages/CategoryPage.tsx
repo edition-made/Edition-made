@@ -9,6 +9,7 @@ import { Product } from '../types';
 import { useSubcategories } from '../hooks/useSubcategories';
 
 const sortOptions = [
+  { value: 'featured', label: 'Sélection Edition Made' },
   { value: 'promo', label: 'Meilleures promotions' },
   { value: 'price_asc', label: 'Prix croissant' },
   { value: 'price_desc', label: 'Prix décroissant' },
@@ -18,7 +19,7 @@ const sortOptions = [
 
 export default function CategoryPage() {
   const { slug, sub } = useParams<{ slug: string; sub?: string }>();
-  const [sortBy, setSortBy] = useState('promo');
+  const [sortBy, setSortBy] = useState('featured');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000]);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedBadges, setSelectedBadges] = useState<string[]>([]);
