@@ -285,7 +285,7 @@ export default function Header() {
                 <X size={22} />
               </button>
             </div>
-            <nav className="flex flex-col pb-24">
+            <nav className="flex flex-col pb-[calc(9rem+env(safe-area-inset-bottom))]">
               {navLinks.map((link) => (
                 <div key={link.href}>
                   <Link
