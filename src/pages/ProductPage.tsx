@@ -77,6 +77,26 @@ export default function ProductPage() {
     setSelectedImage(Math.min(Math.max(index, 0), (product?.images.length ?? 1) - 1));
   };
 
+  // Swipe capté sur toute la zone photo (et pas seulement sur la partie scrollable native)
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const handleSwipeStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    swipeStart.current = { x: t.clientX, y: t.clientY };
+  };
+  const handleSwipeEnd = (e: React.TouchEvent) => {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    const gallery = mobileGalleryRef.current;
+    if (!start || !gallery || !product) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+    const current = Math.round(gallery.scrollLeft / gallery.clientWidth);
+    const target = Math.min(Math.max(current + (dx < 0 ? 1 : -1), 0), product.images.length - 1);
+    if (target !== current) scrollToMobileImage(target);
+  };
+
   const scrollToMobileImage = (index: number) => {
     const gallery = mobileGalleryRef.current;
     if (!gallery) return;
@@ -144,7 +164,7 @@ export default function ProductPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
           {/* min-w-0 : sans lui la colonne grid s'élargit à la largeur de toutes les photos et le swipe n'a plus rien à faire défiler */}
           <div className="min-w-0">
-            <div className="relative mb-3 md:hidden">
+            <div className="relative mb-3 md:hidden" onTouchStart={handleSwipeStart} onTouchEnd={handleSwipeEnd}>
               <div
                 ref={mobileGalleryRef}
                 onScroll={handleMobileGalleryScroll}
@@ -155,7 +175,7 @@ export default function ProductPage() {
                     key={image}
                     type="button"
                     onClick={() => openLightbox(index)}
-                    className="h-full w-full min-w-full flex-shrink-0 basis-full snap-center snap-always"
+                    className="flex h-full w-full min-w-full flex-shrink-0 basis-full snap-center snap-always items-center justify-center"
                     aria-label={`Agrandir la photo ${index + 1} sur ${product.images.length}`}
                   >
                     <img
