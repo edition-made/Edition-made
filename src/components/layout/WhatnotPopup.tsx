@@ -76,18 +76,18 @@ export default function WhatnotPopup() {
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={close} role="dialog" aria-modal="true" aria-label={settings.title}>
       <div className="relative w-full max-w-md bg-white overflow-hidden shadow-2xl animate-[fadeIn_.25s_ease-out]" onClick={e => e.stopPropagation()}>
-        <button onClick={close} aria-label="Fermer" className="absolute top-2 right-2 p-1.5 bg-black/10 hover:bg-black/20 text-black z-10">
+        <button onClick={close} aria-label="Fermer" className="absolute top-2 right-2 p-1.5 bg-white/10 hover:bg-white/20 text-white z-10">
           <X size={18} />
         </button>
 
-        <div className="bg-[#fff500] px-6 pt-8 pb-6 flex flex-col items-center">
-          <img src="/whatnot-logo.png" alt="Whatnot" className="h-14 w-auto mix-blend-multiply" />
+        <div className="bg-black px-6 pt-8 pb-6 flex flex-col items-center">
+          <img src="/whatnot-logo.png" alt="Whatnot" className="h-14 w-auto rounded-lg" />
           {isLive ? (
             <span className="mt-4 inline-flex items-center gap-2 bg-red-600 text-white text-xs font-black px-3 py-1 uppercase tracking-wide">
               <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> En direct maintenant
             </span>
           ) : (
-            <span className="mt-4 bg-black text-[#fff500] text-xs font-black px-3 py-1 uppercase tracking-wide">Prix cassés · Live</span>
+            <span className="mt-4 bg-[#fff500] text-black text-xs font-black px-3 py-1 uppercase tracking-wide">Prix cassés · Live</span>
           )}
         </div>
 
