@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingCart, Menu, X, ChevronDown, Phone, MapPin, MessageSquare,
@@ -269,9 +270,9 @@ export default function Header() {
           )}
         </div>
 
-        {mobileOpen && (
+        {mobileOpen && createPortal(
           // Plein écran, indépendant de la position de scroll de la page
-          <div className="xl:hidden fixed inset-0 z-[60] bg-white overflow-y-auto overscroll-contain" role="dialog" aria-modal="true" aria-label="Menu">
+          <div className="xl:hidden fixed inset-x-0 top-0 h-[100dvh] z-[60] bg-white overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch]" role="dialog" aria-modal="true" aria-label="Menu">
             <div className="sticky top-0 z-10 flex items-center justify-between h-20 px-4 bg-white border-b border-gray-200">
               <Link to="/" onClick={() => setMobileOpen(false)} className="flex-shrink-0">
                 <img
@@ -284,7 +285,7 @@ export default function Header() {
                 <X size={22} />
               </button>
             </div>
-            <nav className="flex flex-col pb-8">
+            <nav className="flex flex-col pb-24">
               {navLinks.map((link) => (
                 <div key={link.href}>
                   <Link
@@ -322,7 +323,8 @@ export default function Header() {
                 </Link>
               </div>
             </nav>
-          </div>
+          </div>,
+          document.body
         )}
       </header>
       <CartDrawer />
