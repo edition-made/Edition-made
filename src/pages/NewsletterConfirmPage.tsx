@@ -4,7 +4,7 @@ import { CheckCircle2, AlertCircle, Copy, Check, Loader } from 'lucide-react';
 
 type State =
   | { kind: 'loading' }
-  | { kind: 'ok'; code: string; percent: number; firstName: string }
+  | { kind: 'ok'; code: string | null; percent: number; firstName: string }
   | { kind: 'error'; message: string };
 
 export default function NewsletterConfirmPage() {
@@ -24,7 +24,7 @@ export default function NewsletterConfirmPage() {
       .then(async res => {
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Lien de confirmation invalide ou expiré.');
-        try { localStorage.setItem('em_promo_code', data.code); } catch { /* ignoré */ }
+        try { if (data.code) localStorage.setItem('em_promo_code', data.code); } catch { /* ignoré */ }
         setState({ kind: 'ok', code: data.code, percent: data.percent, firstName: data.firstName || '' });
       })
       .catch(err => setState({ kind: 'error', message: err instanceof Error ? err.message : 'Une erreur est survenue.' }));
@@ -42,14 +42,20 @@ export default function NewsletterConfirmPage() {
         <>
           <CheckCircle2 size={48} className="mx-auto text-green-600 mb-4" />
           <h1 className="font-display font-bold text-3xl mb-2">Inscription confirmée{state.firstName ? `, ${state.firstName}` : ''} !</h1>
-          <p className="text-gray-600 mb-6">Voici votre code pour <strong>-{state.percent} % de plus sur votre premier achat</strong> :</p>
-          <div className="inline-flex items-center gap-3 bg-black text-[#fff500] px-6 py-4 mb-3">
-            <span className="font-black text-xl tracking-widest">{state.code}</span>
-            <button onClick={() => copy(state.code)} aria-label="Copier le code" className="text-white hover:text-[#fff500]">
-              {copied ? <Check size={18} /> : <Copy size={18} />}
-            </button>
-          </div>
-          <p className="text-xs text-gray-500 mb-8">Il sera appliqué automatiquement à votre commande sur cet appareil. Une copie vous a aussi été envoyée par e-mail.</p>
+          {state.code ? (
+            <>
+              <p className="text-gray-600 mb-6">Voici votre code pour <strong>-{String(state.percent).replace('.', ',')} % de plus sur votre premier achat</strong> :</p>
+              <div className="inline-flex items-center gap-3 bg-black text-[#fff500] px-6 py-4 mb-3">
+                <span className="font-black text-xl tracking-widest">{state.code}</span>
+                <button onClick={() => copy(state.code!)} aria-label="Copier le code" className="text-white hover:text-[#fff500]">
+                  {copied ? <Check size={18} /> : <Copy size={18} />}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mb-8">Il sera appliqué automatiquement à votre commande sur cet appareil. Une copie vous a aussi été envoyée par e-mail.</p>
+            </>
+          ) : (
+            <p className="text-gray-600 mb-8">Merci ! Vous recevrez bientôt nos meilleures offres.</p>
+          )}
           <Link to="/promotions" className="btn-primary">Découvrir les offres</Link>
         </>
       )}

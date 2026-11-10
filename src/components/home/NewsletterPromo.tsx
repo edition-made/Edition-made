@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Gift, MailCheck, Loader } from 'lucide-react';
 
 export default function NewsletterPromo() {
@@ -11,11 +11,24 @@ export default function NewsletterPromo() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [promo, setPromo] = useState<{ enabled: boolean; percent: number }>({ enabled: true, percent: 5 });
+
+  useEffect(() => {
+    fetch('/api/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get-settings' }),
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (d && typeof d.percent === 'number') setPromo({ enabled: !!d.enabled, percent: d.percent }); })
+      .catch(() => { /* texte par défaut */ });
+  }, []);
+  const pct = String(promo.percent).replace('.', ',');
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!consent) { setError('Cochez la case pour recevoir votre code et nos offres.'); return; }
+    if (!consent) { setError('Cochez la case pour vous inscrire.'); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/newsletter', {
@@ -38,14 +51,15 @@ export default function NewsletterPromo() {
       <div className="max-w-screen-xl mx-auto px-4 py-10 md:py-12 grid md:grid-cols-2 gap-8 items-center">
         <div>
           <div className="inline-flex items-center gap-2 bg-black text-[#fff500] text-xs font-black px-3 py-1.5 uppercase tracking-wide mb-4">
-            <Gift size={14} /> Offre de bienvenue
+            <Gift size={14} /> {promo.enabled ? 'Offre de bienvenue' : 'Newsletter'}
           </div>
           <h2 id="newsletter-promo-title" className="font-display font-bold text-3xl md:text-4xl text-black leading-tight">
-            -5 % de plus pour votre premier achat
+            {promo.enabled ? `-${pct} % de plus pour votre premier achat` : 'Ne ratez aucun arrivage'}
           </h2>
           <p className="text-black/70 mt-3 text-sm md:text-base">
-            Inscrivez-vous, confirmez votre e-mail et recevez votre code promo immédiatement. Cumulable avec nos prix déjà cassés,
-            plus l'accès en avant-première à nos arrivages.
+            {promo.enabled
+              ? 'Inscrivez-vous, confirmez votre e-mail et recevez votre code promo immédiatement. Cumulable avec nos prix déjà cassés, plus l\'accès en avant-première à nos arrivages.'
+              : 'Inscrivez-vous pour recevoir nos arrivages et nos offres de déstockage en avant-première.'}
           </p>
         </div>
 
@@ -54,7 +68,7 @@ export default function NewsletterPromo() {
             <MailCheck size={36} className="mx-auto text-[#fff500] mb-3" />
             <p className="font-bold text-lg mb-1">Vérifiez votre boîte mail</p>
             <p className="text-sm text-gray-300">
-              Un e-mail de confirmation vient d'être envoyé à <strong>{email}</strong>. Cliquez sur le lien pour recevoir votre code -5 %.
+              Un e-mail de confirmation vient d'être envoyé à <strong>{email}</strong>. Cliquez sur le lien pour {promo.enabled ? `recevoir votre code -${pct} %` : 'valider votre inscription'}.
               Pensez à regarder dans vos courriers indésirables.
             </p>
           </div>
@@ -95,7 +109,7 @@ export default function NewsletterPromo() {
             </label>
             {error && <p className="text-red-400 text-xs">{error}</p>}
             <button type="submit" disabled={loading} className="btn-primary w-full justify-center disabled:opacity-60">
-              {loading ? <><Loader size={16} className="animate-spin" /> Envoi…</> : 'Recevoir mon code -5 %'}
+              {loading ? <><Loader size={16} className="animate-spin" /> Envoi…</> : (promo.enabled ? `Recevoir mon code -${pct} %` : 'Je m\'inscris')}
             </button>
           </form>
         )}

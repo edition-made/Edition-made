@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 
 export const SITE_URL = (process.env.ALMA_SITE_URL || process.env.SITE_URL || 'https://editionmade.com').replace(/\/$/, '');
-export const WELCOME_DISCOUNT_PERCENT = 5;
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
 const FROM_EMAIL = 'Edition Made <noreply@editionmade.com>';
@@ -94,11 +93,23 @@ export function adminAuthorized(event) {
   return crypto.timingSafeEqual(a, b);
 }
 
+export const DEFAULT_SETTINGS = { promo_enabled: true, promo_percent: 5, promo_mode: 'unique', fixed_code: '' };
+
+export async function getSettings(supabase) {
+  const { data, error } = await supabase.from('newsletter_settings').select('*').eq('id', 1).maybeSingle();
+  if (error || !data) return { ...DEFAULT_SETTINGS };
+  return { ...DEFAULT_SETTINGS, ...data, promo_percent: Number(data.promo_percent) };
+}
+
+export const formatPercent = (value) => String(Number(value)).replace('.', ',');
+
 /**
- * Valide un code promo de bienvenue et calcule la remise sur le sous-total produits.
- * Le code est consommé seulement quand une commande est payée (payment_status = 'paid').
+ * Valide un code promo et renvoie { code, percent }.
+ * - code fixe (défini en admin) : utilisable une seule fois par adresse e-mail client
+ * - code unique d'un inscrit : utilisable une seule fois (consommé quand la commande est payée)
+ * `email` (facultatif) est fourni au moment du paiement pour contrôler le « premier achat ».
  */
-export async function resolvePromo(supabase, rawCode) {
+export async function resolvePromo(supabase, rawCode, email) {
   const code = String(rawCode || '').trim().toUpperCase();
   if (!code) return null;
   const invalid = (message) => {
@@ -107,6 +118,23 @@ export async function resolvePromo(supabase, rawCode) {
     error.code = 'INVALID_PROMO';
     return error;
   };
+
+  const settings = await getSettings(supabase);
+  if (!settings.promo_enabled) throw invalid('Aucun code promo n’est actif actuellement.');
+  const percent = settings.promo_percent;
+
+  if (settings.promo_mode === 'fixed' && settings.fixed_code && code === settings.fixed_code.toUpperCase()) {
+    if (email) {
+      const { count } = await supabase
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('promo_code', code)
+        .eq('payment_status', 'paid')
+        .ilike('customer_email', String(email).trim());
+      if ((count ?? 0) > 0) throw invalid('Ce code promo a déjà été utilisé avec cette adresse e-mail.');
+    }
+    return { code, percent };
+  }
 
   const { data: subscriber } = await supabase
     .from('newsletter_subscribers')
@@ -122,7 +150,7 @@ export async function resolvePromo(supabase, rawCode) {
     .eq('payment_status', 'paid');
   if ((count ?? 0) > 0) throw invalid('Ce code promo a déjà été utilisé (offre réservée au premier achat).');
 
-  return { code, percent: WELCOME_DISCOUNT_PERCENT };
+  return { code, percent };
 }
 
 export function applyPromoToCart(cart, promo) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Mail, Users, Send, Download, Trash2, Eye, Loader, CheckCircle2 } from 'lucide-react';
+import { Mail, Users, Send, Tag, Download, Trash2, Eye, Loader, CheckCircle2 } from 'lucide-react';
 
 type Subscriber = {
   id: string; email: string; first_name: string; last_name: string; phone: string;
@@ -34,7 +34,8 @@ async function api<T>(payload: Record<string, unknown>): Promise<T> {
   return data as T;
 }
 
-type Tab = 'subs' | 'compose' | 'history';
+type Tab = 'subs' | 'compose' | 'history' | 'promo';
+type PromoSettings = { promo_enabled: boolean; promo_percent: number; promo_mode: 'unique' | 'fixed'; fixed_code: string };
 
 export default function NewsletterAdmin() {
   const [tab, setTab] = useState<Tab>('subs');
@@ -49,6 +50,8 @@ export default function NewsletterAdmin() {
   const [testTo, setTestTo] = useState('');
   const [busy, setBusy] = useState('');
   const [info, setInfo] = useState('');
+  const [promo, setPromo] = useState<PromoSettings>({ promo_enabled: true, promo_percent: 5, promo_mode: 'unique', fixed_code: '' });
+  const [percentInput, setPercentInput] = useState('5');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -64,6 +67,21 @@ export default function NewsletterAdmin() {
     }
   }, []);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    api<{ settings: PromoSettings }>({ action: 'get-settings' })
+      .then(({ settings }) => { setPromo(settings); setPercentInput(String(settings.promo_percent)); })
+      .catch(() => { /* valeurs par défaut */ });
+  }, []);
+
+  const savePromo = async () => {
+    setError(''); setInfo(''); setBusy('promo');
+    try {
+      const r = await api<{ settings: PromoSettings }>({ action: 'save-settings', ...promo, promo_percent: Number(percentInput.replace(',', '.')) });
+      setPromo(r.settings); setPercentInput(String(r.settings.promo_percent));
+      setInfo('Réglages du code promo enregistrés.');
+    } catch (err) { setError(err instanceof Error ? err.message : 'Erreur'); }
+    finally { setBusy(''); }
+  };
 
   const confirmed = useMemo(() => subs.filter(s => s.status === 'confirmed').length, [subs]);
   const visible = filter ? subs.filter(s => s.status === filter) : subs;
@@ -116,6 +134,7 @@ export default function NewsletterAdmin() {
     { id: 'subs', label: 'Abonnés', icon: <Users size={14} /> },
     { id: 'compose', label: 'Écrire une newsletter', icon: <Mail size={14} /> },
     { id: 'history', label: 'Historique', icon: <Send size={14} /> },
+    { id: 'promo', label: 'Code promo', icon: <Tag size={14} /> },
   ];
 
   return (
@@ -207,6 +226,49 @@ export default function NewsletterAdmin() {
             <p className="flex items-center gap-2 text-xs font-semibold text-gray-400 mb-1"><Eye size={14} /> Aperçu</p>
             <iframe title="Aperçu" sandbox="" srcDoc={`<body style="font-family:Arial,sans-serif;padding:16px;">${previewDoc}</body>`} className="w-full h-[480px] bg-white border border-white/10" />
           </div>
+        </div>
+      )}
+
+      {tab === 'promo' && (
+        <div className="max-w-xl space-y-5">
+          <label className="flex items-center justify-between gap-4 p-4 border border-white/10 bg-black/40">
+            <div>
+              <p className="text-white font-semibold text-sm">Offre de bienvenue active</p>
+              <p className="text-gray-500 text-xs">Si désactivée, aucun code n'est envoyé ni accepté au paiement.</p>
+            </div>
+            <input type="checkbox" checked={promo.promo_enabled} onChange={e => setPromo({ ...promo, promo_enabled: e.target.checked })} className="w-5 h-5 accent-[#fff500]" />
+          </label>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 mb-1">Remise (%) sur le premier achat</label>
+            <input value={percentInput} onChange={e => setPercentInput(e.target.value)} inputMode="decimal" className={inputCls} />
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-gray-400 mb-2">Type de code</p>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {([['unique', 'Code unique par inscrit', 'Généré automatiquement (ex : BIENVENUE5-K7M2PQ), utilisable une seule fois.'],
+                 ['fixed', 'Code fixe pour tous', 'Un seul code que vous choisissez, utilisable une fois par adresse e-mail.']] as const).map(([value, title, desc]) => (
+                <button key={value} type="button" onClick={() => setPromo({ ...promo, promo_mode: value })}
+                  className={`text-left p-3 border ${promo.promo_mode === value ? 'border-[#fff500] bg-[#fff500]/5' : 'border-white/10 bg-black/40'}`}>
+                  <p className="text-white text-sm font-semibold">{title}</p>
+                  <p className="text-gray-500 text-xs mt-1">{desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {promo.promo_mode === 'fixed' && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 mb-1">Code fixe</label>
+              <input value={promo.fixed_code} onChange={e => setPromo({ ...promo, fixed_code: e.target.value.toUpperCase() })} placeholder="Ex : BIENVENUE5" className={`${inputCls} uppercase tracking-widest`} />
+            </div>
+          )}
+
+          <button onClick={savePromo} disabled={busy !== ''} className="btn-primary disabled:opacity-50">
+            {busy === 'promo' ? 'Enregistrement…' : 'Enregistrer'}
+          </button>
+          <p className="text-[11px] text-gray-600">Les codes uniques déjà envoyés restent valables et suivent le pourcentage actuel.</p>
         </div>
       )}
 

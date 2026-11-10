@@ -45,7 +45,7 @@ export const handler = async (event) => {
     supabase = createServerSupabase();
     const cart = applyPromoToCart(
       addDeliveryToCart(await validateCart(supabase, items), deliveryMode),
-      await resolvePromo(supabase, promoCode),
+      await resolvePromo(supabase, promoCode, customer?.email),
     );
     order = await createPendingOrder(supabase, {
       customer,

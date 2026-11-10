@@ -1,21 +1,26 @@
 import { createServerSupabase } from './_shared/checkout.mjs';
 import {
-  SITE_URL, WELCOME_DISCOUNT_PERCENT, buttonHtml, escapeHtml, generatePromoCode, isValidEmail, json,
+  SITE_URL, buttonHtml, escapeHtml, formatPercent, generatePromoCode, getSettings, isValidEmail, json,
   randomToken, resolvePromo, sendEmail, unsubscribeUrl, wrapEmail,
 } from './_shared/newsletter.mjs';
 
 const RESEND_COOLDOWN_MS = 60 * 1000;
 
-async function sendConfirmationEmail(subscriber) {
+async function sendConfirmationEmail(subscriber, settings) {
   const link = `${SITE_URL}/newsletter/confirmer?token=${subscriber.confirm_token}`;
   const name = subscriber.first_name ? ` ${escapeHtml(subscriber.first_name)}` : '';
+  const promoOn = settings.promo_enabled;
+  const pct = formatPercent(settings.promo_percent);
   return sendEmail({
     to: subscriber.email,
-    subject: `Confirmez votre inscription pour recevoir -${WELCOME_DISCOUNT_PERCENT} % sur votre premier achat`,
+    subject: promoOn
+      ? `Confirmez votre inscription pour recevoir -${pct} % sur votre premier achat`
+      : 'Confirmez votre inscription à la newsletter Edition Made',
     html: wrapEmail(`
       <h1 style="font-size:22px;margin:0 0 12px;">Bonjour${name},</h1>
-      <p>Merci de votre intérêt pour Edition Made ! Confirmez votre adresse e-mail pour recevoir votre code promo
-      <strong>-${WELCOME_DISCOUNT_PERCENT} % supplémentaires sur votre premier achat</strong> et nos meilleures offres de déstockage.</p>
+      <p>Merci de votre intérêt pour Edition Made ! Confirmez votre adresse e-mail pour ${promoOn
+        ? `recevoir votre code promo <strong>-${pct} % supplémentaires sur votre premier achat</strong> et`
+        : 'recevoir'} nos meilleures offres de déstockage.</p>
       ${buttonHtml(link, 'Confirmer mon inscription')}
       <p style="font-size:12px;color:#777;">Si le bouton ne fonctionne pas, copiez ce lien : <br/>${link}</p>
       <p style="font-size:12px;color:#777;">Vous n’êtes pas à l’origine de cette demande ? Ignorez simplement cet e-mail.</p>`),
@@ -23,6 +28,7 @@ async function sendConfirmationEmail(subscriber) {
 }
 
 async function subscribe(supabase, body) {
+  const settings = await getSettings(supabase);
   if (body.website) return json(200, { ok: true }); // honeypot anti-bot
   const email = String(body.email || '').trim().toLowerCase();
   const firstName = String(body.firstName || '').trim().slice(0, 60);
@@ -49,7 +55,7 @@ async function subscribe(supabase, body) {
         to: email,
         subject: 'Vous êtes déjà inscrit(e) — Edition Made',
         html: wrapEmail(`<p>Bonjour ${escapeHtml(existing.first_name || '')}, vous êtes déjà inscrit(e) à notre newsletter.</p>
-          ${existing.promo_code ? `<p>Votre code promo -${WELCOME_DISCOUNT_PERCENT} % (premier achat) : <strong style="font-size:18px;">${existing.promo_code}</strong></p>` : ''}
+          ${settings.promo_enabled && (existing.promo_code || settings.promo_mode === 'fixed') ? `<p>Votre code promo -${formatPercent(settings.promo_percent)} % (premier achat) : <strong style="font-size:18px;">${settings.promo_mode === 'fixed' && settings.fixed_code ? settings.fixed_code : existing.promo_code}</strong></p>` : ''}
           ${buttonHtml(SITE_URL, 'Découvrir nos offres')}`, { unsubscribeLink: unsubscribeUrl(existing.unsubscribe_token) }),
       });
       return okResponse;
@@ -67,7 +73,7 @@ async function subscribe(supabase, body) {
       .eq('id', existing.id)
       .select('*')
       .single();
-    if (updated) await sendConfirmationEmail(updated);
+    if (updated) await sendConfirmationEmail(updated, settings);
     return okResponse;
   }
 
@@ -84,7 +90,7 @@ async function subscribe(supabase, body) {
     console.error('[newsletter:subscribe]', error?.message);
     return json(500, { error: 'Inscription impossible pour le moment. Réessayez plus tard.' });
   }
-  const sent = await sendConfirmationEmail(created);
+  const sent = await sendConfirmationEmail(created, settings);
   if (!sent) return json(502, { error: 'Impossible d’envoyer l’e-mail de confirmation. Réessayez plus tard.' });
   return okResponse;
 }
@@ -97,12 +103,16 @@ async function confirm(supabase, body) {
     .from('newsletter_subscribers').select('*').eq('confirm_token', token).maybeSingle();
   if (!subscriber) return json(404, { error: 'Lien de confirmation invalide ou expiré.' });
 
-  let promoCode = subscriber.promo_code;
+  const settings = await getSettings(supabase);
+  const fixed = settings.promo_mode === 'fixed' && !!settings.fixed_code;
+  const pct = formatPercent(settings.promo_percent);
+  let promoCode = null;
+  if (settings.promo_enabled) promoCode = fixed ? settings.fixed_code.toUpperCase() : subscriber.promo_code;
   const firstConfirmation = subscriber.status !== 'confirmed';
 
   if (firstConfirmation) {
     const patch = { status: 'confirmed', confirmed_at: new Date().toISOString(), unsubscribed_at: null };
-    if (!promoCode) {
+    if (settings.promo_enabled && !fixed && !promoCode) {
       // Réessaie en cas (très improbable) de collision sur l'index unique
       for (let attempt = 0; attempt < 5; attempt++) {
         const candidate = generatePromoCode();
@@ -114,19 +124,23 @@ async function confirm(supabase, body) {
     } else {
       await supabase.from('newsletter_subscribers').update(patch).eq('id', subscriber.id);
     }
+    const greeting = subscriber.first_name ? ` ${escapeHtml(subscriber.first_name)}` : '';
     await sendEmail({
       to: subscriber.email,
-      subject: `Votre code promo -${WELCOME_DISCOUNT_PERCENT} % Edition Made`,
-      html: wrapEmail(`
-        <h1 style="font-size:22px;margin:0 0 12px;">Bienvenue${subscriber.first_name ? ` ${escapeHtml(subscriber.first_name)}` : ''} !</h1>
-        <p>Votre inscription est confirmée. Voici votre code pour <strong>-${WELCOME_DISCOUNT_PERCENT} % supplémentaires sur votre premier achat</strong> :</p>
+      subject: promoCode ? `Votre code promo -${pct} % Edition Made` : 'Bienvenue chez Edition Made',
+      html: wrapEmail(promoCode ? `
+        <h1 style="font-size:22px;margin:0 0 12px;">Bienvenue${greeting} !</h1>
+        <p>Votre inscription est confirmée. Voici votre code pour <strong>-${pct} % supplémentaires sur votre premier achat</strong> :</p>
         <p style="text-align:center;margin:24px 0;"><span style="background:#000;color:#fff500;font-size:22px;font-weight:bold;letter-spacing:2px;padding:14px 24px;display:inline-block;">${promoCode}</span></p>
         <p style="text-align:center;font-size:13px;color:#555;">À saisir à l’étape « Informations » de la commande. Valable une seule fois, cumulable avec nos prix déjà remisés.</p>
-        ${buttonHtml(SITE_URL, 'Profiter de mon offre')}`, { unsubscribeLink: unsubscribeUrl(subscriber.unsubscribe_token) }),
+        ${buttonHtml(SITE_URL, 'Profiter de mon offre')}` : `
+        <h1 style="font-size:22px;margin:0 0 12px;">Bienvenue${greeting} !</h1>
+        <p>Votre inscription est confirmée. Vous recevrez bientôt nos meilleures offres de déstockage.</p>
+        ${buttonHtml(SITE_URL, 'Découvrir nos offres')}`, { unsubscribeLink: unsubscribeUrl(subscriber.unsubscribe_token) }),
     });
   }
 
-  return json(200, { ok: true, code: promoCode, percent: WELCOME_DISCOUNT_PERCENT, firstName: subscriber.first_name });
+  return json(200, { ok: true, code: promoCode, percent: settings.promo_percent, firstName: subscriber.first_name });
 }
 
 async function unsubscribe(supabase, body) {
@@ -144,7 +158,7 @@ async function unsubscribe(supabase, body) {
 
 async function validateCode(supabase, body) {
   try {
-    const promo = await resolvePromo(supabase, body.code);
+    const promo = await resolvePromo(supabase, body.code, body.email);
     if (!promo) return json(400, { valid: false, error: 'Saisissez un code promo.' });
     return json(200, { valid: true, code: promo.code, percent: promo.percent });
   } catch (error) {
@@ -168,6 +182,10 @@ export const handler = async (event) => {
       case 'subscribe': return await subscribe(supabase, body);
       case 'confirm': return await confirm(supabase, body);
       case 'unsubscribe': return await unsubscribe(supabase, body);
+      case 'get-settings': {
+        const st = await getSettings(supabase);
+        return json(200, { enabled: st.promo_enabled, percent: st.promo_percent });
+      }
       case 'validate-code': return await validateCode(supabase, body);
       default: return json(400, { error: 'Action inconnue' });
     }

@@ -243,7 +243,7 @@ export default function CheckoutPage() {
       const res = await fetch('/api/alma-eligibility', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cartPayload(), deliveryMode, promoCode: promo?.code }),
+        body: JSON.stringify({ items: cartPayload(), deliveryMode, promoCode: promo?.code, customer: { email: form.email } }),
       });
       const data = await parseApiResponse(res);
       if (res.ok && Array.isArray(data.plans)) setAlmaPlans(data.plans);
@@ -252,7 +252,7 @@ export default function CheckoutPage() {
     } finally {
       setAlmaLoading(false);
     }
-  }, [cartPayload, deliveryMode, hasUnavailableItems, promo]);
+  }, [cartPayload, deliveryMode, hasUnavailableItems, promo, form.email]);
 
   const prepareStripePayment = useCallback(async () => {
     setPiLoading(true);

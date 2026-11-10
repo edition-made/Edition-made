@@ -15,11 +15,11 @@ export const handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method Not Allowed' });
 
   try {
-    const { items, deliveryMode, promoCode } = JSON.parse(event.body || '{}');
+    const { items, deliveryMode, promoCode, customer } = JSON.parse(event.body || '{}');
     const supabase = createServerSupabase();
     const cart = applyPromoToCart(
       addDeliveryToCart(await validateCart(supabase, items), deliveryMode),
-      await resolvePromo(supabase, promoCode).catch(() => null),
+      await resolvePromo(supabase, promoCode, customer?.email).catch(() => null),
     );
     const eligibility = await getAlmaEligibility(cart.amountCents, [3, 4]);
     const entries = Array.isArray(eligibility) ? eligibility : [eligibility];

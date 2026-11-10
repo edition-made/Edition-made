@@ -1,5 +1,5 @@
 import { createServerSupabase } from './_shared/checkout.mjs';
-import { adminAuthorized, escapeHtml, json, sendBatch, sendEmail, unsubscribeUrl, wrapEmail } from './_shared/newsletter.mjs';
+import { getSettings, adminAuthorized, escapeHtml, json, sendBatch, sendEmail, unsubscribeUrl, wrapEmail } from './_shared/newsletter.mjs';
 
 const BATCH_SIZE = 50;
 
@@ -43,6 +43,22 @@ export const handler = async (event) => {
         .order('created_at', { ascending: false })
         .limit(50);
       return json(200, { subscribers: data || [], campaigns: campaigns || [] });
+    }
+
+    if (body.action === 'get-settings') return json(200, { settings: await getSettings(supabase) });
+
+    if (body.action === 'save-settings') {
+      const percent = Number(body.promo_percent);
+      const mode = body.promo_mode === 'fixed' ? 'fixed' : 'unique';
+      const fixedCode = String(body.fixed_code || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
+      if (!(percent > 0 && percent <= 90)) return json(400, { error: 'Le pourcentage doit être compris entre 0,01 et 90.' });
+      if (mode === 'fixed' && fixedCode.length < 4) return json(400, { error: 'Le code fixe doit contenir au moins 4 caractères (lettres, chiffres, - ou _).' });
+      const { error } = await supabase.from('newsletter_settings').upsert({
+        id: 1, promo_enabled: body.promo_enabled !== false, promo_percent: percent,
+        promo_mode: mode, fixed_code: fixedCode, updated_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+      return json(200, { ok: true, settings: await getSettings(supabase) });
     }
 
     if (body.action === 'delete') {
