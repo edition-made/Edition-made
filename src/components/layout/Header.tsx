@@ -270,8 +270,21 @@ export default function Header() {
         </div>
 
         {mobileOpen && (
-          <div className="xl:hidden border-t border-gray-200 bg-white max-h-[80vh] overflow-y-auto overscroll-contain animate-slide-up">
-            <nav className="flex flex-col">
+          // Plein écran, indépendant de la position de scroll de la page
+          <div className="xl:hidden fixed inset-0 z-[60] bg-white overflow-y-auto overscroll-contain" role="dialog" aria-modal="true" aria-label="Menu">
+            <div className="sticky top-0 z-10 flex items-center justify-between h-20 px-4 bg-white border-b border-gray-200">
+              <Link to="/" onClick={() => setMobileOpen(false)} className="flex-shrink-0">
+                <img
+                  src="https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp"
+                  alt="Edition Made"
+                  className="h-12 w-auto object-contain"
+                />
+              </Link>
+              <button onClick={() => setMobileOpen(false)} className="p-2 hover:bg-[#fff500] transition-colors" aria-label="Fermer le menu">
+                <X size={22} />
+              </button>
+            </div>
+            <nav className="flex flex-col pb-8">
               {navLinks.map((link) => (
                 <div key={link.href}>
                   <Link
