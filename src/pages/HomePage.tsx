@@ -1,4 +1,5 @@
 import Hero from '../components/home/Hero';
+import NewsletterPromo from '../components/home/NewsletterPromo';
 import PromoSection from '../components/home/PromoSection';
 import NewArrivals from '../components/home/NewArrivals';
 import CategoriesSection from '../components/home/CategoriesSection';
@@ -14,6 +15,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <NewsletterPromo />
       <PaymentSection />
       <PromoSection />
       <NewArrivals />

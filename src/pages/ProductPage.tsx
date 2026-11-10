@@ -52,6 +52,8 @@ export default function ProductPage() {
         .select('*')
         .eq('category', p.category)
         .neq('slug', slug)
+        .order('in_stock', { ascending: false })
+        .order('sort_order', { ascending: true, nullsFirst: false })
         .limit(4);
       if (simData && simData.length > 0) {
         setSimilarProducts(simData.map(dbProductToProduct));
@@ -139,26 +141,28 @@ export default function ProductPage() {
           <span className="text-black">{product.name}</span>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-10 mb-16">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
+          {/* min-w-0 : sans lui la colonne grid s'élargit à la largeur de toutes les photos et le swipe n'a plus rien à faire défiler */}
+          <div className="min-w-0">
             <div className="relative mb-3 md:hidden">
               <div
                 ref={mobileGalleryRef}
                 onScroll={handleMobileGalleryScroll}
-                className="flex aspect-square snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-gray-50 scrollbar-hide touch-pan-x"
+                className="flex aspect-square snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-gray-50 scrollbar-hide touch-pan-x touch-pan-y"
               >
                 {product.images.map((image, index) => (
                   <button
                     key={image}
                     type="button"
                     onClick={() => openLightbox(index)}
-                    className="h-full min-w-full snap-center snap-always"
+                    className="h-full w-full min-w-full flex-shrink-0 basis-full snap-center snap-always"
                     aria-label={`Agrandir la photo ${index + 1} sur ${product.images.length}`}
                   >
                     <img
                       src={image}
                       alt={`${product.name} — photo ${index + 1}`}
-                      className="h-full w-full object-contain"
+                      className="h-full w-full object-contain select-none"
+                      draggable={false}
                     />
                   </button>
                 ))}

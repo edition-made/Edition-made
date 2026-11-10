@@ -1,4 +1,5 @@
 import { getAlmaEligibility } from './_shared/alma.mjs';
+import { applyPromoToCart, resolvePromo } from './_shared/newsletter.mjs';
 import { addDeliveryToCart, createServerSupabase, validateCart } from './_shared/checkout.mjs';
 
 function json(statusCode, body) {
@@ -14,9 +15,12 @@ export const handler = async (event) => {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method Not Allowed' });
 
   try {
-    const { items, deliveryMode } = JSON.parse(event.body || '{}');
+    const { items, deliveryMode, promoCode } = JSON.parse(event.body || '{}');
     const supabase = createServerSupabase();
-    const cart = addDeliveryToCart(await validateCart(supabase, items), deliveryMode);
+    const cart = applyPromoToCart(
+      addDeliveryToCart(await validateCart(supabase, items), deliveryMode),
+      await resolvePromo(supabase, promoCode).catch(() => null),
+    );
     const eligibility = await getAlmaEligibility(cart.amountCents, [3, 4]);
     const entries = Array.isArray(eligibility) ? eligibility : [eligibility];
     const plans = entries
@@ -33,6 +37,7 @@ export const handler = async (event) => {
     return json(200, {
       eligible: plans.length > 0,
       amount: cart.amountCents,
+      discount: Math.round((cart.discountAmount || 0) * 100),
       subtotal: Math.round(cart.subtotal * 100),
       deliveryCost: Math.round(cart.deliveryCost * 100),
       plans,

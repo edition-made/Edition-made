@@ -119,7 +119,7 @@ export default function ProductsAdmin() {
   const buildBaseQuery = (withSortOrder: boolean) => {
     let q = supabase.from('products').select('*');
     q = withSortOrder
-      ? q.order('sort_order', { ascending: true, nullsFirst: false })
+      ? q.order('sort_order', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false })
       : q.order('created_at', { ascending: false });
     if (activeSub) q = q.eq('subcategory', activeSub);
     else if (activeCat) q = q.eq('category', activeCat);

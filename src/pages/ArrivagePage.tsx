@@ -17,7 +17,8 @@ export default function ArrivagePage() {
         if (lim) q = q.limit(lim);
         let { data, error } = await q
           .order('in_stock', { ascending: false })
-          .order('sort_order', { ascending: true, nullsFirst: false });
+          .order('sort_order', { ascending: true, nullsFirst: false })
+          .order('created_at', { ascending: false });
         if (error) {
           const qf = supabase.from('products').select('*').eq(eq_field, eq_val);
           ({ data } = await (lim ? qf.limit(lim) : qf)

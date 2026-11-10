@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Lock, Truck, Store, ChevronDown, ChevronUp, AlertCircle, Loader, CreditCard, CalendarDays } from 'lucide-react';
+import { Lock, Truck, Store, ChevronDown, ChevronUp, AlertCircle, Loader, CreditCard, CalendarDays, Tag, Check } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../context/CartContext';
@@ -140,7 +140,56 @@ export default function CheckoutPage() {
   });
   const [summaryOpen, setSummaryOpen] = useState(false);
   const deliveryCost = getDeliveryCost(totalPrice, deliveryMode);
-  const orderTotal = totalPrice + deliveryCost;
+  const PROMO_KEY = 'em_promo_code';
+
+  // Code promo de bienvenue (validé côté serveur, recalculé à chaque paiement)
+  const [promoInput, setPromoInput] = useState('');
+  const [promo, setPromo] = useState<{ code: string; percent: number } | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+  const discount = promo ? Math.round(totalPrice * promo.percent) / 100 : 0;
+  const orderTotal = Math.round((totalPrice - discount + deliveryCost) * 100) / 100;
+
+  const applyPromo = useCallback(async (rawCode: string) => {
+    const code = rawCode.trim().toUpperCase();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoError(null);
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'validate-code', code }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.valid) {
+        setPromo({ code: data.code, percent: data.percent });
+        setPromoInput(data.code);
+        try { localStorage.setItem(PROMO_KEY, data.code); } catch { /* ignoré */ }
+      } else {
+        setPromo(null);
+        setPromoError(data.error || 'Ce code promo n’est pas valide.');
+      }
+    } catch {
+      setPromoError('Impossible de vérifier le code pour le moment.');
+    } finally {
+      setPromoLoading(false);
+    }
+  }, []);
+
+  const removePromo = () => {
+    setPromo(null);
+    setPromoInput('');
+    setPromoError(null);
+  };
+
+  // Pré-remplit le code reçu après confirmation de l'inscription
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(PROMO_KEY);
+      if (saved) applyPromo(saved);
+    } catch { /* ignoré */ }
+  }, [applyPromo]);
 
   // Payment state
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -175,7 +224,8 @@ export default function CheckoutPage() {
     city: form.city,
     zip: form.zip,
     items: cartPayload(),
-  }), [form, deliveryMode, cartPayload]);
+    promoCode: promo?.code,
+  }), [form, deliveryMode, cartPayload, promo]);
 
   const handleContinueToPayment = useCallback(async () => {
     if (hasUnavailableItems) {
@@ -193,7 +243,7 @@ export default function CheckoutPage() {
       const res = await fetch('/api/alma-eligibility', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cartPayload(), deliveryMode }),
+        body: JSON.stringify({ items: cartPayload(), deliveryMode, promoCode: promo?.code }),
       });
       const data = await parseApiResponse(res);
       if (res.ok && Array.isArray(data.plans)) setAlmaPlans(data.plans);
@@ -202,7 +252,7 @@ export default function CheckoutPage() {
     } finally {
       setAlmaLoading(false);
     }
-  }, [cartPayload, deliveryMode, hasUnavailableItems]);
+  }, [cartPayload, deliveryMode, hasUnavailableItems, promo]);
 
   const prepareStripePayment = useCallback(async () => {
     setPiLoading(true);
@@ -586,11 +636,42 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
+                <div className="mb-4">
+                  {promo ? (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 text-xs">
+                      <span className="flex items-center gap-1.5 font-bold text-green-800"><Check size={14} /> {promo.code}</span>
+                      {step === 0 && <button onClick={removePromo} className="text-gray-500 hover:text-black underline">Retirer</button>}
+                    </div>
+                  ) : (
+                    <form onSubmit={e => { e.preventDefault(); applyPromo(promoInput); }} className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input
+                          value={promoInput}
+                          onChange={e => setPromoInput(e.target.value)}
+                          placeholder="Code promo"
+                          className="w-full border border-gray-300 pl-8 pr-2 py-2 text-xs uppercase focus:outline-none focus:border-black"
+                        />
+                      </div>
+                      <button type="submit" disabled={promoLoading || !promoInput.trim()} className="bg-black text-white px-3 text-xs font-bold disabled:opacity-50">
+                        {promoLoading ? '…' : 'Appliquer'}
+                      </button>
+                    </form>
+                  )}
+                  {promoError && <p className="text-xs text-red-600 mt-1">{promoError}</p>}
+                </div>
+
                 <div className="border-t border-gray-100 pt-3">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-500">Sous-total</span>
                     <span className="font-semibold">{totalPrice.toFixed(2)} €</span>
                   </div>
+                  {promo && (
+                    <div className="flex justify-between text-sm mb-1 text-green-700">
+                      <span>Code {promo.code} (−{promo.percent} %)</span>
+                      <span className="font-semibold">−{discount.toFixed(2)} €</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm mb-3">
                     <span className="text-gray-500">Livraison</span>
                     <span className={deliveryCost === 0 ? 'text-gray-400' : 'font-semibold'}>

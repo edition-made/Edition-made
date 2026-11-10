@@ -6,6 +6,7 @@ import {
   createServerSupabase,
   validateCart,
 } from './_shared/checkout.mjs';
+import { applyPromoToCart, resolvePromo } from './_shared/newsletter.mjs';
 
 const SITE_URL = (process.env.ALMA_SITE_URL || 'https://editionmade.com').replace(/\/$/, '');
 const FALLBACK_IMAGE_URL = 'https://bbzkudxpoglswakoyhyf.supabase.co/storage/v1/object/public/Image%20du%20site/EDITION_MADE_LOGO_SITE_WEB_MEUBLE_FRANCE_DESTOCKAGE_PARIS_SAINT_MAURICE_94410_LUXE_DESIGN.webp';
@@ -40,7 +41,7 @@ export const handler = async (event) => {
     return json(400, { error: 'Corps de requête invalide' });
   }
 
-  const { customer, deliveryMode, address, city, zip, items, installmentsCount } = payload;
+  const { customer, deliveryMode, address, city, zip, items, installmentsCount, promoCode } = payload;
   if (![3, 4].includes(installmentsCount)) {
     return json(400, { error: 'Choisissez un paiement Alma en 3x ou 4x.' });
   }
@@ -49,7 +50,10 @@ export const handler = async (event) => {
   let order = null;
   try {
     supabase = createServerSupabase();
-    const cart = addDeliveryToCart(await validateCart(supabase, items), deliveryMode);
+    const cart = applyPromoToCart(
+      addDeliveryToCart(await validateCart(supabase, items), deliveryMode),
+      await resolvePromo(supabase, promoCode),
+    );
     const eligibilityResponse = await getAlmaEligibility(cart.amountCents, [installmentsCount]);
     const eligibility = Array.isArray(eligibilityResponse) ? eligibilityResponse[0] : eligibilityResponse;
     if (!eligibility?.eligible) {
@@ -79,6 +83,16 @@ export const handler = async (event) => {
       city: city || 'Saint-Maurice',
       country: 'FR',
     };
+    // Le code promo est réparti proportionnellement sur les lignes pour que le total du panier
+    // corresponde au montant payé (la dernière ligne absorbe l'arrondi).
+    const goodsCents = Math.round((cart.subtotal - (cart.discountAmount || 0)) * 100);
+    const rawLines = cart.items.map((item) => Math.round(item.totalPrice * 100));
+    const rawSum = rawLines.reduce((sum, value) => sum + value, 0);
+    const almaLinePrices = rawLines.map((value) => (cart.discountAmount ? Math.round((value * goodsCents) / rawSum) : value));
+    if (cart.discountAmount) {
+      const drift = goodsCents - almaLinePrices.reduce((sum, value) => sum + value, 0);
+      almaLinePrices[almaLinePrices.length - 1] += drift;
+    }
     const confirmationUrl = `${SITE_URL}/commande-confirmee?payment_provider=alma&order_number=${encodeURIComponent(order.order_number)}`;
 
     const payment = await createAlmaPayment({
@@ -100,10 +114,10 @@ export const handler = async (event) => {
         },
         cart: {
           items: [
-            ...cart.items.map((item) => ({
+            ...cart.items.map((item, index) => ({
             title: item.productName,
             quantity: item.quantity,
-            line_price: Math.round(item.totalPrice * 100),
+            line_price: almaLinePrices[index],
             picture_url: item.productImage || FALLBACK_IMAGE_URL,
             })),
             ...(cart.deliveryCost > 0 ? [{

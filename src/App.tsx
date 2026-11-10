@@ -24,6 +24,9 @@ import MentionsLegalesPage from './pages/MentionsLegalesPage';
 import WhatsAppButton from './components/ui/WhatsAppButton';
 import SiteAnalytics from './components/analytics/SiteAnalytics';
 import WebMCPTools from './components/analytics/WebMCPTools';
+import NewsletterConfirmPage from './pages/NewsletterConfirmPage';
+import NewsletterUnsubscribePage from './pages/NewsletterUnsubscribePage';
+import ScrollToTop from './components/layout/ScrollToTop';
 import WhatnotPopup from './components/layout/WhatnotPopup';
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -44,6 +47,7 @@ export default function App() {
       <CartProvider>
         <SiteAnalytics />
         <WebMCPTools />
+        <ScrollToTop />
         <WhatnotPopup />
         <Routes>
           <Route path="/admin/*" element={<AdminApp />} />
@@ -64,6 +68,8 @@ export default function App() {
           <Route path="/recherche" element={<Layout><SearchPage /></Layout>} />
           <Route path="/livraison" element={<Layout><DeliveryPolicyPage /></Layout>} />
           <Route path="/retours" element={<Layout><ReturnPolicyPage /></Layout>} />
+          <Route path="/newsletter/confirmer" element={<Layout><NewsletterConfirmPage /></Layout>} />
+          <Route path="/newsletter/desinscription" element={<Layout><NewsletterUnsubscribePage /></Layout>} />
           <Route path="/mentions-legales" element={<Layout><MentionsLegalesPage /></Layout>} />
           <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>

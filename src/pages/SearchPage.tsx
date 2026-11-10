@@ -30,6 +30,7 @@ export default function SearchPage() {
         .select('id, name, slug, price, images, category, in_stock, stock_count')
         .or(`name.ilike.%${query}%,category.ilike.%${query}%,description.ilike.%${query}%`)
         .order('in_stock', { ascending: false })
+        .order('sort_order', { ascending: true, nullsFirst: false })
         .limit(24);
       setResults(data || []);
       setLoading(false);

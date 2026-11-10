@@ -70,6 +70,16 @@
   to = "/.netlify/functions/send-contact-email"
   status = 200
 
+[[redirects]]
+  from = "/api/newsletter"
+  to = "/.netlify/functions/newsletter"
+  status = 200
+
+[[redirects]]
+  from = "/api/newsletter-admin"
+  to = "/.netlify/functions/newsletter-admin"
+  status = 200
+
 # SPA catch-all — doit rester en dernier
 [[redirects]]
   from = "/*"

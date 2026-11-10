@@ -17,6 +17,7 @@ export default function NewArrivals() {
         .eq('is_weekly_arrival', filters.is_weekly_arrival)
         .order('in_stock', { ascending: false })
         .order('sort_order', { ascending: true, nullsFirst: false })
+        .order('created_at', { ascending: false })
         .limit(8);
       if (error) {
         ({ data } = await supabase

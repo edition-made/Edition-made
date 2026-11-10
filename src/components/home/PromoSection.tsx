@@ -15,6 +15,7 @@ export default function PromoSection() {
       .select('*')
       .gte('discount', 40)
       .order('in_stock', { ascending: false })
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('discount', { ascending: false })
       .limit(8)
       .then(({ data }) => {

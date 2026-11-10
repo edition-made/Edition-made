@@ -146,6 +146,8 @@ export async function createPendingOrder(supabase, { customer, deliveryMode, add
       subtotal: cart.subtotal ?? cart.total,
       delivery_cost: cart.deliveryCost ?? 0,
       total: cart.total,
+      promo_code: cart.promoCode || null,
+      discount_amount: cart.discountAmount || 0,
       payment_method: paymentMethod,
       payment_status: 'pending',
     })

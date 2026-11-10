@@ -6,6 +6,7 @@ import {
   createServerSupabase,
   validateCart,
 } from './_shared/checkout.mjs';
+import { applyPromoToCart, resolvePromo } from './_shared/newsletter.mjs';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2024-04-10' });
 
@@ -36,13 +37,16 @@ export const handler = async (event) => {
     return json(400, { error: 'Corps de requête invalide' });
   }
 
-  const { customer, deliveryMode, address, city, zip, items } = payload;
+  const { customer, deliveryMode, address, city, zip, items, promoCode } = payload;
   let supabase;
   let order = null;
 
   try {
     supabase = createServerSupabase();
-    const cart = addDeliveryToCart(await validateCart(supabase, items), deliveryMode);
+    const cart = applyPromoToCart(
+      addDeliveryToCart(await validateCart(supabase, items), deliveryMode),
+      await resolvePromo(supabase, promoCode),
+    );
     order = await createPendingOrder(supabase, {
       customer,
       deliveryMode,

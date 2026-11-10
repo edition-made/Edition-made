@@ -11,6 +11,7 @@ import CRMAdmin from './pages/CRMAdmin';
 import ContactsAdmin from './pages/ContactsAdmin';
 import StockAdmin from './pages/StockAdmin';
 import AccountingAdmin from './pages/AccountingAdmin';
+import NewsletterAdmin from './pages/NewsletterAdmin';
 import WhatnotAdmin from './pages/WhatnotAdmin';
 import CategoriesAdmin from './pages/CategoriesAdmin';
 import VisibilityAdmin from './pages/VisibilityAdmin';
@@ -35,6 +36,7 @@ export default function AdminApp() {
         <Route path="contacts" element={<ContactsAdmin />} />
         <Route path="stock" element={<StockAdmin />} />
         <Route path="comptabilite" element={<AccountingAdmin />} />
+        <Route path="newsletter" element={<NewsletterAdmin />} />
         <Route path="whatnot" element={<WhatnotAdmin />} />
         <Route path="categories" element={<CategoriesAdmin />} />
         <Route path="sous-categories" element={<SubcategoriesAdmin />} />

@@ -15,6 +15,7 @@ export default function PromotionsPage() {
       .select('*')
       .gte('discount', 1)
       .order('in_stock', { ascending: false })
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('discount', { ascending: false })
       .then(({ data }) => {
         if (data && data.length > 0) {

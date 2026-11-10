@@ -94,6 +94,20 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
+
+  // Burger ouvert : la page derrière est figée, seul le menu défile
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const html = document.documentElement;
+    const prevHtml = html.style.overflow;
+    const prevBody = document.body.style.overflow;
+    html.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    return () => {
+      html.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
+    };
+  }, [mobileOpen]);
   const navigate = useNavigate();
   const { subcategories } = useSubcategories();
   const navLinks = useMemo(() => baseNavLinks.map(link => {
@@ -256,7 +270,7 @@ export default function Header() {
         </div>
 
         {mobileOpen && (
-          <div className="xl:hidden border-t border-gray-200 bg-white max-h-[80vh] overflow-y-auto animate-slide-up">
+          <div className="xl:hidden border-t border-gray-200 bg-white max-h-[80vh] overflow-y-auto overscroll-contain animate-slide-up">
             <nav className="flex flex-col">
               {navLinks.map((link) => (
                 <div key={link.href}>

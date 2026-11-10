@@ -41,7 +41,8 @@ export default function CategoryPage() {
 
       let { data, error } = await applyFilters(supabase.from('products').select('*'))
         .order('in_stock', { ascending: false })
-        .order('sort_order', { ascending: true, nullsFirst: false });
+        .order('sort_order', { ascending: true, nullsFirst: false })
+        .order('created_at', { ascending: false });
       if (error) {
         ({ data } = await applyFilters(supabase.from('products').select('*'))
           .order('in_stock', { ascending: false })
