@@ -26,6 +26,8 @@ import SiteAnalytics from './components/analytics/SiteAnalytics';
 import WebMCPTools from './components/analytics/WebMCPTools';
 import NewsletterConfirmPage from './pages/NewsletterConfirmPage';
 import NewsletterUnsubscribePage from './pages/NewsletterUnsubscribePage';
+import GoogleAnalytics from './components/analytics/GoogleAnalytics';
+import CookieBanner from './components/layout/CookieBanner';
 import ScrollToTop from './components/layout/ScrollToTop';
 import WhatnotPopup from './components/layout/WhatnotPopup';
 
@@ -48,6 +50,8 @@ export default function App() {
         <SiteAnalytics />
         <WebMCPTools />
         <ScrollToTop />
+        <GoogleAnalytics />
+        <CookieBanner />
         <WhatnotPopup />
         <Routes>
           <Route path="/admin/*" element={<AdminApp />} />

@@ -56,6 +56,16 @@
       "priceRange": "€€"
     }
     </script>
+    <!-- Google Analytics 4 — Consent Mode v2 : stockage refusé par défaut, accordé après acceptation du bandeau cookies -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('consent', 'default', { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied', wait_for_update: 500 });
+      try { if (localStorage.getItem('em_cookie_consent') === 'granted') gtag('consent', 'update', { analytics_storage: 'granted' }); } catch (e) {}
+      gtag('js', new Date());
+      gtag('config', 'G-DRJNH1YS7C', { send_page_view: false });
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DRJNH1YS7C"></script>
     <!-- Stripe.js préconnexion DNS uniquement — @stripe/stripe-js gère la version -->
     <link rel="preconnect" href="https://js.stripe.com" />
     <link rel="dns-prefetch" href="https://js.stripe.com" />

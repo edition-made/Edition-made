@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Gift, MailCheck, Loader } from 'lucide-react';
+import { trackEvent } from '../../lib/analytics';
 
 export default function NewsletterPromo() {
   const [firstName, setFirstName] = useState('');
@@ -38,6 +39,7 @@ export default function NewsletterPromo() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Une erreur est survenue.');
+      trackEvent('generate_lead', { method: 'newsletter_home' });
       setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue.');

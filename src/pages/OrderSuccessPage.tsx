@@ -5,6 +5,7 @@ import { supabase, DbOrder, DbOrderItem } from '../lib/supabase';
 import { useCart } from '../context/CartContext';
 
 import { useStoreHours } from '../lib/storeHours';
+import { trackEvent } from '../lib/analytics';
 
 export default function OrderSuccessPage() {
   const { lines } = useStoreHours();
@@ -79,6 +80,21 @@ export default function OrderSuccessPage() {
           .select('*')
           .eq('order_id', orderData.id);
         setItems(itemsData || []);
+        const guardKey = `em_purchase_${orderNumber}`;
+        let alreadySent = false;
+        try { alreadySent = !!sessionStorage.getItem(guardKey); sessionStorage.setItem(guardKey, '1'); } catch { /* ignoré */ }
+        if (!alreadySent) {
+          trackEvent('purchase', {
+            transaction_id: orderNumber,
+            currency: 'EUR',
+            value: Number(orderData.total),
+            shipping: Number(orderData.delivery_cost || 0),
+            coupon: orderData.promo_code || undefined,
+            items: (itemsData || []).map((it: { product_id: string; product_name: string; unit_price: number; quantity: number }) => ({
+              item_id: it.product_id, item_name: it.product_name, price: Number(it.unit_price), quantity: it.quantity,
+            })),
+          });
+        }
       }
       setLoading(false);
     };

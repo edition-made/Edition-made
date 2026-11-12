@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { X, CalendarClock, ArrowRight } from 'lucide-react';
+import { trackEvent } from '../../lib/analytics';
 import { supabase, DbWhatnotSettings } from '../../lib/supabase';
 
 const DISMISS_KEY = 'em_whatnot_dismissed';
@@ -106,7 +107,7 @@ export default function WhatnotPopup() {
             </div>
           )}
 
-          <a href={settings.url} target="_blank" rel="noopener noreferrer" onClick={close} className="btn-primary w-full justify-center">
+          <a href={settings.url} target="_blank" rel="noopener noreferrer" onClick={() => { trackEvent('whatnot_click', { live: isLive }); close(); }} className="btn-primary w-full justify-center">
             {isLive ? 'Rejoindre le live' : 'Voir sur Whatnot'} <ArrowRight size={16} />
           </a>
           <button onClick={close} className="mt-3 text-xs text-gray-400 hover:text-gray-600">Non merci</button>

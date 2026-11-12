@@ -1,3 +1,4 @@
+import { trackEvent } from '../lib/analytics';
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { CartItem, Product } from '../types';
 
@@ -22,6 +23,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback((product: Product, quantity = 1, color?: string) => {
     if (!product.inStock || product.stockCount === 0 || quantity <= 0) return;
+    trackEvent('add_to_cart', {
+      currency: 'EUR',
+      value: product.price * quantity,
+      items: [{ item_id: product.id, item_name: product.name, item_category: product.category, price: product.price, quantity }],
+    });
 
     setItems(prev => {
       const existing = prev.find(i => i.product.id === product.id && i.selectedColor === color);

@@ -5,6 +5,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useCart } from '../context/CartContext';
 import { getDeliveryCost } from '../lib/shipping';
+import { trackEvent } from '../lib/analytics';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
 const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
@@ -234,6 +235,12 @@ export default function CheckoutPage() {
     }
 
     setPiError(null);
+    trackEvent('begin_checkout', {
+      currency: 'EUR',
+      value: orderTotal,
+      coupon: promo?.code,
+      items: items.map(i => ({ item_id: i.product.id, item_name: i.product.name, price: i.product.price, quantity: i.quantity })),
+    });
     setStep(1);
     setSelectedPaymentMethod(null);
     setAlmaLoading(true);
@@ -252,7 +259,7 @@ export default function CheckoutPage() {
     } finally {
       setAlmaLoading(false);
     }
-  }, [cartPayload, deliveryMode, hasUnavailableItems, promo, form.email]);
+  }, [cartPayload, deliveryMode, hasUnavailableItems, promo, form.email, items, orderTotal]);
 
   const prepareStripePayment = useCallback(async () => {
     setPiLoading(true);
